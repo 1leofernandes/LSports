@@ -5,71 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="icon" href="assets/icone.webp"/>
+    <link rel="stylesheet" href="styles/resetar-senha.css">
 
     <title>Redefinir Senha</title>
-    <style>
-        .message {
-            color: green;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f8f9fa;
-            padding: 20px;
-        }
-
-        .logoLogin {
-            max-width: 100%;
-            height: auto;
-            max-height: 400px;
-            margin-bottom: 15px;
-            margin-left: auto;
-            margin-right: auto;
-
-        }
-        .logoCountainer {
-            padding: 20px;
-        }
-        .container {
-            max-width: 400px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .btn-custom-red {
-            background-color: #af0e09;
-            color: white;
-            border: none;
-            font-weight: bold;
-            font-size: medium;
-        }
-
-        .btn-custom-red:hover {
-            background-color: #790e0b;
-            color: white;
-            font-weight: bold;
-        }
-        .form-label {
-            margin-right: 30px;
-
-        }
-        .custom-link {
-            color: #af0e09;
-            text-decoration: none;
-        }
-
-        .custom-link:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
 <body>
     <div class="container 20px">
@@ -91,49 +29,6 @@
         </form>
         <p id="message" class="message" style="display: none;">Senha redefinida com sucesso! Redirecionando para a página de login...</p>
     </div>
-    <script>
-        const API_BASE_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000' 
-            : 'https://resenha-backend.onrender.com';
-        document.getElementById('resetForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            
-            const senha = document.getElementById('senha').value;
-            const confirmSenha = document.getElementById('confirmSenha').value;
-            
-            if (senha !== confirmSenha) {
-                alert('As senhas não coincidem.');
-                return;
-            }
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/resetar-senha/${token}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ senha })
-                });
-
-                if (response.ok) {
-                    const messageElement = document.getElementById('message');
-                    messageElement.style.display = 'block';
-
-                    // Espera 2 segundos antes de redirecionar
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
-                } else {
-                    alert('Erro ao redefinir a senha. Tente novamente.');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('Erro ao redefinir a senha. Tente novamente.');
-            }
-        });
-    </script>
+    <script src="scripts/resetar-senha.js" defer></script>
 </body>
 </html>
