@@ -1,0 +1,28 @@
+databases:
+  - name: resenha-db
+    databaseName: resenha
+    user: resenha-user
+
+services:
+  - type: web
+    name: resenha-backend
+    runtime: node
+    buildCommand: cd agendamento-resenha && npm install
+    startCommand: cd agendamento-resenha && node server.js
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: resenha-db
+          property: host
+      - key: DB_USER
+        fromDatabase:
+          name: resenha-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: resenha-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: resenha-db
+          property: databaseName

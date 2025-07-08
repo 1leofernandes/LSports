@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo</title>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+        
+        body {
+            background-color: #f5f6fa;
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            background: var(--primary-color);
+            padding: 15px 20px;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card-panel {
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-floating {
+            margin-left: 10px;
+        }
+
+        .collection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .collection-item:hover {
+            transform: translateX(5px);
+        }
+
+        .badge {
+            background-color: var(--secondary-color) !important;
+        }
+
+        .input-field {
+            margin-top: 1rem;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .stats-card {
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .modal {
+            border-radius: 10px;
+        }
+
+        .booking-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .booking-details {
+            margin-bottom: 5px;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-warning {
+            background-color: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+        }
+
+         /* Ajustes para mobile */
+         @media only screen and (max-width: 600px) {
+        .dashboard-header .brand-logo {
+            font-size: 1.2rem;
+        }
+        
+        .time-inputs {
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .input-field {
+            margin-bottom: 0.5rem;
+        }
+        
+        .booking-item {
+            padding: 10px;
+        }
+        
+        .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        /* Melhorar inputs de tempo em mobile */
+        input[type="time"] {
+            height: 3rem;
+            padding-top: 1rem;
+        }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <nav>
+          <div class="nav-wrapper">
+            <a href="#" class="brand-logo">Painel Admin</a>
+            <a href="#" data-target="mobile-menu" class="sidenav-trigger">
+              <i class="material-icons">menu</i>
+            </a>
+            <ul class="right hide-on-med-and-down">
+              <li><a onclick="logout()" class="waves-effect"><i class="material-icons left">exit_to_app</i>Sair</a></li>
+            </ul>
+          </div>
+        </nav>
+    </div>
+
+    <main>
+        <div class="row">
+            <!-- Agendamentos -->
+            <div class="col s12 l8">
+                <div class="card-panel white">
+                    <h5 class="section-title"><i class="material-icons">calendar_today</i>Agendamentos Recentes</h5>
+                    <div class="row">
+                        <div class="input-field col s12">
+                          <i class="material-icons prefix">search</i>
+                          <input type="text" id="busca-agendamentos" placeholder="Buscar por nome, data, horário ou quadra...">
+                          <label for="busca-agendamentos">Buscar Agendamentos</label>
+                        </div>
+                      </div>
+                    <div id="agendamentos-list">
+                        <div class="progress">
+                            <div class="indeterminate"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloqueios -->
+            <div class="col s12 l4">
+                <div class="card-panel white">
+                    <h5 class="section-title"><i class="material-icons">lock</i>Bloquear Horários</h5>
+                    
+                    <div class="input-field">
+                        <input type="date" id="data-bloqueio" class="validate">
+                        <label for="data-bloqueio">Data</label>
+                    </div>
+
+                    <button onclick="bloquearDia()" class="btn waves-effect waves-light btn-warning">
+                        <i class="material-icons left">block</i>Bloquear Dia
+                    </button>
+
+                    <div class="row">
+                        <div class="col s12 m6">
+                          <div class="input-field">
+                            <input type="time" id="hora-inicio" class="validate">
+                            <label for="hora-inicio">Hora Início</label>
+                          </div>
+                        </div>
+                        <div class="col s12 m6">
+                          <div class="input-field">
+                            <input type="time" id="hora-fim" class="validate">
+                            <label for="hora-fim">Hora Fim</label>
+                          </div>
+                        </div>
+                    </div>
+
+                    <button onclick="bloquearHorario()" class="btn waves-effect waves-light btn-warning">
+                        <i class="material-icons left">schedule</i>Bloquear Horário
+                    </button>
+                </div>
+
+                <!-- Horários Bloqueados -->
+                <div class="card-panel white">
+                    <h5 class="section-title"><i class="material-icons">lock_clock</i>Horários Bloqueados</h5>
+                    <div id="bloqueios-list">
+                        <div class="progress">
+                            <div class="indeterminate"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funcionários -->
+        <div class="row">
+            <div class="col s12">
+                <div class="card-panel white">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h5 class="section-title"><i class="material-icons">people</i>Funcionários</h5>
+                        <button id="btnRegistrarFuncionario" class="btn waves-effect waves-light">
+                            <i class="material-icons left">person_add</i>Novo Funcionário
+                        </button>
+                    </div>
+                    <div id="funcionarios-list">
+                        <div class="progress">
+                            <div class="indeterminate"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <ul class="sidenav" id="mobile-menu">
+        <li><a onclick="logout()" class="waves-effect"><i class="material-icons left">exit_to_app</i>Sair</a></li>
+    </ul>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000' 
+            : 'https://resenha-backend.onrender.com';
+        const adminEmails = ['leonardoff24@gmail.com', 'BONIEQUES2020@GMAIL.COM', 'bonieques2020@gmail.com'];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            M.AutoInit();
+            validarUsuario();
+            carregarAgendamentos();
+            carregarBloqueios();
+            carregarFuncionarios();
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        function formatarData(dataString) {
+            // Cria um objeto Date ajustando para o fuso horário local
+            const data = new Date(dataString);
+            // Ajusta para o fuso horário local
+            data.setMinutes(data.getMinutes() + data.getTimezoneOffset());
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        async function validarUsuario() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Você não está logado. Redirecionando para o login...');
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userEmail = payload.email;
+
+                if (!adminEmails.includes(userEmail)) {
+                    alert('Acesso negado. Somente administradores podem acessar esta página.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Erro na autenticação:', error);
+                alert('Erro na autenticação. Tente novamente.');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function calcularValorFront(horaInicio, horaFim) {
+            const [inicioH, inicioM] = horaInicio.split(':').map(Number);
+            const [fimH, fimM] = horaFim.split(':').map(Number);
+            
+            const minutosTotais = ((fimH * 60 + fimM) - (inicioH * 60 + inicioM));
+            const horasCheias = Math.floor(minutosTotais / 60);
+            const meiasHoras = (minutosTotais % 60) / 30;
+            return (horasCheias * 50) + (meiasHoras * 25);
+        }
+
+        async function carregarAgendamentos() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE_URL}/agendamentos`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Erro ao carregar agendamentos.');
+                const agendamentos = await res.json();
+                const lista = document.getElementById('agendamentos-list');
+                
+                if (agendamentos.length) {
+                    lista.innerHTML = agendamentos.map(a => `
+                        <div class="booking-item">
+                            <div class="booking-details">
+                                <strong>${a.nome_cliente}</strong> - ${a.telefone_cliente}
+                            </div>
+                            <div class="booking-details">
+                                <i class="material-icons tiny">date_range</i> 
+                                ${formatarData(a.data_agendada)} <!-- Usando a função corrigida -->
+                            </div>
+                            <div class="booking-details">
+                                <i class="material-icons tiny">access_time</i> 
+                                ${a.hora_inicio} - ${a.hora_fim}
+                            </div>
+                            <div class="booking-details">
+                                <i class="material-icons tiny">sports_soccer</i> 
+                                ${a.quadra}
+                            </div>
+                            <div class="booking-details" style="margin-top: 10px;">
+                                <span class="badge white-text">
+                                    R$ ${calcularValorFront(a.hora_inicio, a.hora_fim).toFixed(2).replace('.', ',')}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    lista.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar agendamentos:', error);
+                document.getElementById('agendamentos-list').innerHTML = 
+                    '<div class="card-panel red lighten-4">Erro ao carregar agendamentos.</div>';
+            }
+        }
+
+        async function bloquearDia() {
+            const data = document.getElementById('data-bloqueio').value;
+            if (!data) {
+                M.toast({html: 'Selecione uma data!', classes: 'red'});
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE_URL}/bloquear-dia`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ data })
+                });
+                const result = await res.json();
+                M.toast({html: result.message, classes: 'green'});
+                carregarBloqueios();
+            } catch (error) {
+                console.error('Erro ao bloquear dia:', error);
+                M.toast({html: 'Erro ao bloquear dia.', classes: 'red'});
+            }
+        }
+
+        async function bloquearHorario() {
+            const data = document.getElementById('data-bloqueio').value;
+            const hora_inicio = document.getElementById('hora-inicio').value;
+            const hora_fim = document.getElementById('hora-fim').value;
+            
+            if (!data || !hora_inicio || !hora_fim) {
+                M.toast({html: 'Preencha todos os campos!', classes: 'red'});
+                return;
+            }
+            
+            if (hora_inicio >= hora_fim) {
+                M.toast({html: 'Hora fim deve ser após hora início!', classes: 'red'});
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE_URL}/bloquear-horario`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ data, hora_inicio, hora_fim })
+                });
+                const result = await res.json();
+                M.toast({html: result.message, classes: 'green'});
+                carregarBloqueios();
+            } catch (error) {
+                console.error('Erro ao bloquear horário:', error);
+                M.toast({html: 'Erro ao bloquear horário.', classes: 'red'});
+            }
+        }
+
+        async function carregarBloqueios() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE_URL}/bloqueios`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                if (!res.ok) throw new Error('Erro ao carregar bloqueios.');
+                
+                const bloqueios = await res.json();
+                const lista = document.getElementById('bloqueios-list');
+                
+                if (bloqueios.length) {
+                    lista.innerHTML = bloqueios.map(b => `
+                        <div class="booking-item">
+                            <div class="booking-details">
+                                <i class="material-icons tiny">event</i> 
+                                ${formatarData(b.data)} <!-- Usando a função corrigida -->
+                            </div>
+                            <div class="booking-details">
+                                <i class="material-icons tiny">schedule</i> 
+                                ${b.hora_inicio.slice(0,5)} - ${b.hora_fim.slice(0,5)}
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button onclick="removerBloqueio(${b.id})" class="btn btn-danger waves-effect waves-light btn-small">
+                                    <i class="material-icons left">delete</i>Remover
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    lista.innerHTML = '<p>Nenhum horário bloqueado.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar bloqueios:', error);
+                document.getElementById('bloqueios-list').innerHTML = 
+                    '<div class="card-panel red lighten-4">Erro ao carregar bloqueios.</div>';
+            }
+        }
+
+        async function removerBloqueio(id) {
+            const token = localStorage.getItem('token');
+            
+            if (!confirm('Tem certeza que deseja remover este bloqueio?')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/bloqueios/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                const result = await res.json();
+                M.toast({html: result.message, classes: 'green'});
+                carregarBloqueios();
+            } catch (error) {
+                console.error('Erro ao remover bloqueio:', error);
+                M.toast({html: 'Erro ao remover bloqueio.', classes: 'red'});
+            }
+        }
+
+        document.getElementById('btnRegistrarFuncionario').addEventListener('click', function() {
+            window.location.href = 'registrar-funcionario.html';
+        });
+        
+        async function carregarFuncionarios() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE_URL}/funcionarios`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                if (!res.ok) throw new Error('Erro ao carregar funcionários');
+                
+                const funcionarios = await res.json();
+                const lista = document.getElementById('funcionarios-list');
+                
+                if (funcionarios.length) {
+                    lista.innerHTML = funcionarios.map(f => `
+                        <div class="booking-item">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>${f.nome}</strong><br>
+                                    <span class="grey-text">${f.email}</span>
+                                </div>
+                                <button onclick="excluirFuncionario(${f.id})" class="btn btn-danger waves-effect waves-light btn-small">
+                                    <i class="material-icons left">delete</i>Excluir
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    lista.innerHTML = '<p>Nenhum funcionário cadastrado.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar funcionários:', error);
+                document.getElementById('funcionarios-list').innerHTML = 
+                    '<div class="card-panel red lighten-4">Erro ao carregar funcionários.</div>';
+            }
+        }
+
+        async function excluirFuncionario(id) {
+            const token = localStorage.getItem('token');
+            
+            if (!confirm('Tem certeza que deseja excluir este funcionário?')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/funcionarios/${id}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (res.ok) {
+                    M.toast({html: 'Funcionário excluído com sucesso', classes: 'green'});
+                    carregarFuncionarios();
+                } else {
+                    const erro = await res.json();
+                    M.toast({html: `Erro: ${erro.message}`, classes: 'red'});
+                }
+            } catch (error) {
+                console.error('Erro ao excluir funcionário:', error);
+                M.toast({html: 'Erro ao excluir funcionário', classes: 'red'});
+            }
+        }
+        // Função de busca para o painel administrativo
+        function configurarBuscaAgendamentos() {
+        const buscaInput = document.getElementById('busca-agendamentos');
+        let todosAgendamentos = [];
+        
+        // Carregar agendamentos e configurar busca
+        async function carregarEConfigurar() {
+            const token = localStorage.getItem('token');
+            try {
+            const res = await fetch(`${API_BASE_URL}/agendamentos`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Erro ao carregar agendamentos.');
+            todosAgendamentos = await res.json();
+            filtrarAgendamentos();
+            } catch (error) {
+            console.error('Erro:', error);
+            }
+        }
+        
+        // Função de filtro
+        function filtrarAgendamentos() {
+            const termo = buscaInput.value.toLowerCase();
+            const lista = document.getElementById('agendamentos-list');
+            
+            if (!termo) {
+            // Mostrar todos se não há termo de busca
+            renderizarAgendamentos(todosAgendamentos);
+            return;
+            }
+            
+            const resultados = todosAgendamentos.filter(a => {
+            return (
+                a.nome_cliente.toLowerCase().includes(termo) ||
+                a.telefone_cliente.includes(termo) ||
+                new Date(a.data_agendada).toLocaleDateString('pt-BR').includes(termo) ||
+                a.hora_inicio.includes(termo) ||
+                a.hora_fim.includes(termo) ||
+                a.quadra.toString().includes(termo)
+            );
+            });
+            
+            renderizarAgendamentos(resultados);
+        }
+        
+        // Função para renderizar resultados
+        function renderizarAgendamentos(agendamentos) {
+            const lista = document.getElementById('agendamentos-list');
+            
+            if (agendamentos.length) {
+            lista.innerHTML = agendamentos.map(a => `
+                <div class="booking-item">
+                <div class="booking-details">
+                    <strong>${a.nome_cliente}</strong> - ${a.telefone_cliente}
+                </div>
+                <div class="booking-details">
+                    <i class="material-icons tiny">date_range</i> 
+                    ${formatarData(a.data_agendada)}
+                </div>
+                <div class="booking-details">
+                    <i class="material-icons tiny">access_time</i> 
+                    ${a.hora_inicio} - ${a.hora_fim}
+                </div>
+                <div class="booking-details">
+                    <i class="material-icons tiny">sports_soccer</i> 
+                    ${a.quadra}
+                </div>
+                <div class="booking-details" style="margin-top: 10px;">
+                    <span class="badge white-text">
+                    R$ ${calcularValorFront(a.hora_inicio, a.hora_fim).toFixed(2).replace('.', ',')}
+                    </span>
+                </div>
+                </div>
+            `).join('');
+            } else {
+            lista.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+            }
+        }
+        
+        // Configurar evento de input
+        buscaInput.addEventListener('input', filtrarAgendamentos);
+        
+        // Inicializar
+        carregarEConfigurar();
+        }
+
+        // Adicionar ao DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+        // ... outros códigos ...
+        configurarBuscaAgendamentos();
+        });
+
+        // Inicializar sidenav (menu mobile)
+        document.addEventListener('DOMContentLoaded', function() {
+        var elems = document.querySelectorAll('.sidenav');
+        M.Sidenav.init(elems);
+        
+        // Ajustar inputs de tempo em mobile
+        if(window.innerWidth < 600) {
+            document.querySelectorAll('input[type="time"]').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.type = 'text';
+                setTimeout(() => {
+                this.type = 'time';
+                }, 100);
+            });
+            });
+        }
+        });
+    </script>
+</body>
+</html>
