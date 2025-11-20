@@ -285,6 +285,59 @@ app.get('/agendamentos/horarios', async (req, res) => {
   }
 });
 
+// Endpoint compatível com frontend antigo: horários ocupados e reservas completas
+app.get('/horarios-ocupados', async (req, res) => {
+  try {
+    const { data, quadra } = req.query;
+    if (!data) return res.status(400).json({ message: 'data é obrigatória' });
+
+    await withTenantClient(req.tenant_id, async (client) => {
+      const params = [req.tenant_id, data];
+      let q = `SELECT id, usuario_id, data_agendada, hora_inicio, hora_fim, quadra, status, payment_method FROM agendamentos WHERE tenant_id = $1 AND data_agendada = $2`;
+      if (quadra) {
+        q += ` AND quadra = $3`;
+        params.push(parseInt(quadra, 10));
+      }
+      const r = await client.query(q, params);
+
+      const horariosOcupadosQuadra1 = r.rows.filter(rw => Number(rw.quadra) === 1).map(x => x.hora_inicio?.slice(0,5));
+      const horariosOcupadosQuadra2 = r.rows.filter(rw => Number(rw.quadra) === 2).map(x => x.hora_inicio?.slice(0,5));
+
+      return res.json({ reservas: r.rows, horariosOcupadosQuadra1, horariosOcupadosQuadra2 });
+    });
+  } catch (err) {
+    console.error('/horarios-ocupados error:', err);
+    if (!res.headersSent) res.status(500).json({ message: 'Erro ao carregar horários' });
+  }
+});
+
+// Endpoint compatível com frontend: bloqueios específicos e recorrentes
+app.get('/horarios-bloqueados', async (req, res) => {
+  try {
+    const { data, quadra } = req.query;
+    if (!data) return res.status(400).json({ message: 'data é obrigatória' });
+
+    await withTenantClient(req.tenant_id, async (client) => {
+      // bloqueios específicos
+      const beParams = [req.tenant_id, data, quadra || null];
+      const beQuery = `SELECT id, data, hora_inicio, hora_fim, quadra FROM bloqueios WHERE tenant_id = $1 AND data = $2` +
+        (quadra ? ` AND (quadra IS NULL OR quadra = $3)` : '');
+      const be = await client.query(beQuery, quadra ? beParams : [req.tenant_id, data]);
+
+      // bloqueios recorrentes (blocked_slots)
+      const dayOfWeek = new Date(data).getDay();
+      const brParams = [req.tenant_id, dayOfWeek];
+      const brQuery = `SELECT id, day_of_week, start_time AS hora_inicio, end_time AS hora_fim, quadra, nome FROM blocked_slots WHERE tenant_id = $1 AND day_of_week = $2`;
+      const br = await client.query(brQuery, brParams);
+
+      return res.json({ bloqueiosEspecificos: be.rows, bloqueiosRecorrentes: br.rows });
+    });
+  } catch (err) {
+    console.error('/horarios-bloqueados error:', err);
+    if (!res.headersSent) res.status(500).json({ message: 'Erro ao carregar horários bloqueados' });
+  }
+});
+
 // Verificar disponibilidade (reutilizado por front)
 app.post('/verificar-disponibilidade', async (req, res) => {
   try {

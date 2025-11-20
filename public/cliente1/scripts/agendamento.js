@@ -2,6 +2,10 @@ const API_BASE_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:3000' 
     : 'https://lsports.onrender.com';
 
+// extrai tenant do path (ex: /cliente1/...) — usado pelo backend para identificar tenant
+const _pathParts = window.location.pathname.split('/');
+const tenant = _pathParts[1] || localStorage.getItem('tenant') || '';
+
 // Funções básicas
 function logout() {
     localStorage.removeItem('token');
@@ -54,7 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
 // Funções de agendamento
 async function carregarHorariosOcupados(data, quadra) {
     try {
-        const response = await fetch(`${API_BASE_URL}/horarios-ocupados?data=${data}&quadra=${quadra}`);
+        const response = await fetch(`${API_BASE_URL}/horarios-ocupados?data=${encodeURIComponent(data)}&quadra=${encodeURIComponent(quadra)}`, {
+            headers: { 'X-Tenant': tenant }
+        });
         if (!response.ok) throw new Error('Erro ao carregar horários');
         return await response.json();
     } catch (error) {
@@ -65,7 +71,9 @@ async function carregarHorariosOcupados(data, quadra) {
 
 async function carregarHorariosBloqueados(data, quadra) {
     try {
-        const response = await fetch(`${API_BASE_URL}/horarios-bloqueados?data=${data}&quadra=${quadra}`);
+        const response = await fetch(`${API_BASE_URL}/horarios-bloqueados?data=${encodeURIComponent(data)}&quadra=${encodeURIComponent(quadra)}`, {
+            headers: { 'X-Tenant': tenant }
+        });
         if (!response.ok) throw new Error('Erro ao carregar horários bloqueados');
         return await response.json();
     } catch (error) {
@@ -387,7 +395,7 @@ async function carregarMeusAgendamentos() {
 
     try {
         const response = await fetch(`${API_BASE_URL}/meus-agendamentos`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${token}`, 'X-Tenant': tenant }
         });
 
         if (!response.ok) throw new Error('Erro ao carregar');
@@ -456,7 +464,7 @@ async function cancelarAgendamento(id) {
     try {
         const response = await fetch(`${API_BASE_URL}/cancelar-agendamento/${id}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${token}`, 'X-Tenant': tenant }
         });
 
         if (!response.ok) throw new Error('Erro ao cancelar');
@@ -535,7 +543,8 @@ async function enviarAgendamento(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant
             },
             body: JSON.stringify({
                 data_agendada: data,
@@ -577,7 +586,8 @@ async function enviarAgendamento(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant
             },
             body: JSON.stringify({
                 usuario_id,
