@@ -23,7 +23,7 @@ const adminEmails = [
 
 // middlewares globais
 app.use(cors({
-  origin: ['https://cantinhodoboni.vercel.app', 'http://localhost:3000', 'http://127.0.0.1:5500'],
+  origin: ['https://l-sports.vercel.app', 'http://localhost:3000', 'http://127.0.0.1:5500'],
   methods: ['GET','POST','PUT','DELETE'],
   allowedHeaders: ['Content-Type','Authorization','x-tenant'],
   credentials: true
