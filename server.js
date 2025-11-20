@@ -324,10 +324,10 @@ app.get('/horarios-bloqueados', async (req, res) => {
         (quadra ? ` AND (quadra IS NULL OR quadra = $3)` : '');
       const be = await client.query(beQuery, quadra ? beParams : [req.tenant_id, data]);
 
-      // bloqueios recorrentes (blocked_slots)
+      // bloqueios recorrentes (bloqueios_recorrentes)
       const dayOfWeek = new Date(data).getDay();
       const brParams = [req.tenant_id, dayOfWeek];
-      const brQuery = `SELECT id, day_of_week, start_time AS hora_inicio, end_time AS hora_fim, quadra, nome FROM blocked_slots WHERE tenant_id = $1 AND day_of_week = $2`;
+      const brQuery = `SELECT id, day_of_week, start_time AS hora_inicio, end_time AS hora_fim, quadra, nome FROM bloqueios_recorrentes WHERE tenant_id = $1 AND day_of_week = $2`;
       const br = await client.query(brQuery, brParams);
 
       return res.json({ bloqueiosEspecificos: be.rows, bloqueiosRecorrentes: br.rows });
@@ -361,10 +361,10 @@ app.post('/verificar-disponibilidade', async (req, res) => {
           AND NOT (hora_fim <= $4 OR hora_inicio >= $5)
       `, [req.tenant_id, data_agendada, quadraNum, hora_inicio, hora_fim]);
 
-      // conflitos recorrentes (blocked_slots)
+      // conflitos recorrentes (bloqueios_recorrentes)
       const diaSemana = new Date(data_agendada).getDay();
       const br = await client.query(`
-        SELECT id FROM blocked_slots
+        SELECT id FROM bloqueios_recorrentes
         WHERE tenant_id = $1 AND day_of_week = $2
           AND (quadra IS NULL OR quadra = $3)
           AND NOT (end_time <= $4 OR start_time >= $5)
@@ -612,7 +612,7 @@ app.post('/bloquear-horario-recorrente', authenticateToken, isFuncionarioOuAdmin
   try {
     const { dia_semana, hora_inicio, hora_fim, quadra, nome } = req.body;
     await withTenantClient(req.tenant_id, async (client) => {
-      const r = await client.query(`INSERT INTO blocked_slots (tenant_id, day_of_week, start_time, end_time, quadra, nome, created_at) VALUES ($1,$2,$3,$4,$5,$6,NOW()) RETURNING *`,
+      const r = await client.query(`INSERT INTO bloqueios_recorrentes (tenant_id, day_of_week, start_time, end_time, quadra, nome, created_at) VALUES ($1,$2,$3,$4,$5,$6,NOW()) RETURNING *`,
         [req.tenant_id, dia_semana, hora_inicio, hora_fim, quadra, nome]);
       return res.status(201).json(r.rows[0]);
     });
@@ -626,7 +626,7 @@ app.post('/bloquear-horario-recorrente', authenticateToken, isFuncionarioOuAdmin
 app.get('/bloqueios-recorrentes', authenticateToken, async (req, res) => {
   try {
     await withTenantClient(req.tenant_id, async (client) => {
-      const r = await client.query('SELECT * FROM blocked_slots WHERE tenant_id = $1', [req.tenant_id]);
+      const r = await client.query('SELECT * FROM bloqueios_recorrentes WHERE tenant_id = $1', [req.tenant_id]);
       return res.json(r.rows);
     });
   } catch (err) {
@@ -640,7 +640,7 @@ app.delete('/bloqueios-recorrentes/:id', authenticateToken, isFuncionarioOuAdmin
   try {
     const id = req.params.id;
     await withTenantClient(req.tenant_id, async (client) => {
-      await client.query('DELETE FROM blocked_slots WHERE tenant_id = $1 AND id = $2', [req.tenant_id, id]);
+      await client.query('DELETE FROM bloqueios_recorrentes WHERE tenant_id = $1 AND id = $2', [req.tenant_id, id]);
       return res.json({ message: 'Bloqueio recorrente removido com sucesso' });
     });
   } catch (err) {
