@@ -1,6 +1,6 @@
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
-    : 'https://resenha-backend.onrender.com';
+    : 'https://lsports.onrender.com';
 
 // Funções básicas
 function logout() {

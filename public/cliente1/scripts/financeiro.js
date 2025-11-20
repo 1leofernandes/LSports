@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://resenha-backend.onrender.com';
+const API_BASE_URL = 'https://lsports.onrender.com';
 let chartDiario, chartDiasSemana, chartMensal;
 let currentData = {};
 let periodoSelecionado = 3;

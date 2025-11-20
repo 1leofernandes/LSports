@@ -12,43 +12,43 @@ toggleSenha.addEventListener("click", function () {
         toggleSenha.classList.add("fa-eye");
     }
 });
+
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
-    : 'https://resenha-backend.onrender.com';
-const form = document.getElementById('loginForm');
-
-form.addEventListener('submit', async (e) => {
+    : 'https://lsports.onrender.com';
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    const nome = document.getElementById('name').value;
     const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const telefone = document.getElementById('telefone').value;
+    const senha = document.getElementById('password').value;
+
+    if (!nome || !email || !telefone || !senha) {
+        alert("Preencha todos os campos!");
+        return;
+    }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        const response = await fetch(`${API_BASE_URL}/registrar`, {  
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ email, senha: password })
+            body: JSON.stringify({ nome, email, telefone, senha })  // Enviando dados formatados
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('nome', data.nome);
-            localStorage.setItem('usuario_id', data.usuario_id);
-            const role = JSON.parse(atob(data.token.split('.')[1])).role; 
-
-            if (role === 'cliente') {
-                window.location.href = 'agendamento.html'; 
-            } else if (role === 'funcionario') {
-                window.location.href = 'funcionario.html';
-            }
+            alert('Usuário registrado com sucesso!');
+            window.location.href = 'login.html';
         } else {
-            alert(data.message);
+            alert(data.message || "Erro ao registrar");
         }
     } catch (error) {
-        console.error('Erro ao fazer login:', error);
+        console.error('Erro ao registrar:', error);
+        alert("Erro ao conectar ao servidor");
     }
 });

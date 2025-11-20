@@ -8,7 +8,7 @@ const db = require('./db'); // Certifique-se de que db.js usa o método .promise
 const router = express.Router();
 const API_BASE_URL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:3000'
-  : 'https://resenha-backend.onrender.com';
+  : 'https://lsports.onrender.com';
 
 
 // Login
