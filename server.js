@@ -157,7 +157,7 @@ app.post('/registrar', async (req, res) => {
 
       await client.query(
         `INSERT INTO usuarios (tenant_id, nome, email, senha, telefone, role, created_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,NOW())`,
+         VALUES ($1,$2,$3,$4,$5,$6,NOW())`,
         [req.tenant_id, nome, email, hashed, telefone, 'cliente']
       );
 
