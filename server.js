@@ -30,6 +30,9 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
+// Montar rotas de autenticação definidas em auth.js em /auth
+const authRouter = require('./auth');
+app.use('/auth', authRouter);
 
 // ------------------------------------------------------------
 // Helper: wrapper para executar queries com app.current_tenant
