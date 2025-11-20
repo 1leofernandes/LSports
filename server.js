@@ -156,9 +156,9 @@ app.post('/registrar', async (req, res) => {
       const roles = adminEmails.includes(email) ? 'admin' : 'cliente';
 
       await client.query(
-        `INSERT INTO usuarios (tenant_id, nome, email, senha, telefone, role, roles, created_at)
+        `INSERT INTO usuarios (tenant_id, nome, email, senha, telefone, role, created_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,NOW())`,
-        [req.tenant_id, nome, email, hashed, telefone, 'cliente', roles]
+        [req.tenant_id, nome, email, hashed, telefone, 'cliente']
       );
 
       return res.status(201).json({ message: 'Usuário registrado com sucesso' });
