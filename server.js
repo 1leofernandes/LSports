@@ -38,7 +38,10 @@ async function withTenantClient(tenantId, handler) {
   const client = await db.connect(); // pool.connect()
   try {
     await client.query('BEGIN');
-    await client.query('SET LOCAL app.current_tenant = $1', [tenantId]);
+      // SET LOCAL does not accept parameter placeholders in some Postgres versions.
+      // Tenant id comes from our DB (trusted), so interpolate safely as integer.
+      const tid = parseInt(tenantId, 10);
+      await client.query(`SET LOCAL app.current_tenant = '${tid}'`);
     const res = await handler(client);
     await client.query('COMMIT');
     return res;
