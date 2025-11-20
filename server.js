@@ -7,7 +7,7 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('./db'); // pool do pg (arquivo que você enviou)
-const { isAdmin, isFuncionarioOuAdmin } = require('./middlewares'); // usa seus middlewares existentes para roles
+const { authenticateToken, isAdmin, isFuncionarioOuAdmin } = require('./middlewares'); // usa seus middlewares existentes para roles
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -90,31 +90,31 @@ app.use(tenantExtractor);
 // ------------------------------------------------------------
 // Auth middleware (verifica token + checa tenant_id no token)
 // ------------------------------------------------------------
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Token não fornecido' });
+// function authenticateToken(req, res, next) {
+//   const authHeader = req.headers['authorization'];
+//   const token = authHeader && authHeader.split(' ')[1];
+//   if (!token) return res.status(401).json({ message: 'Token não fornecido' });
 
-  jwt.verify(token, JWT_SECRET, (err, payload) => {
-    if (err) return res.status(403).json({ message: 'Token inválido' });
+//   jwt.verify(token, JWT_SECRET, (err, payload) => {
+//     if (err) return res.status(403).json({ message: 'Token inválido' });
 
-    // payload deve conter tenant_id (modelo C). Se não tiver, negar.
-    if (!payload.tenant_id || payload.tenant_id !== req.tenant_id) {
-      return res.status(403).json({ message: 'Token inválido para este tenant' });
-    }
+//     // payload deve conter tenant_id (modelo C). Se não tiver, negar.
+//     if (!payload.tenant_id || payload.tenant_id !== req.tenant_id) {
+//       return res.status(403).json({ message: 'Token inválido para este tenant' });
+//     }
 
-    // setar req.user compatível com seus middlewares existentes
-    req.user = {
-      id: payload.id,
-      nome: payload.nome,
-      email: payload.email,
-      role: payload.role,
-      roles: payload.roles, // legacy
-      tenant_id: payload.tenant_id
-    };
-    next();
-  });
-}
+//     // setar req.user compatível com seus middlewares existentes
+//     req.user = {
+//       id: payload.id,
+//       nome: payload.nome,
+//       email: payload.email,
+//       role: payload.role,
+//       roles: payload.roles, // legacy
+//       tenant_id: payload.tenant_id
+//     };
+//     next();
+//   });
+// }
 
 // ------------------------------------------------------------
 // ROUTES

@@ -1,3 +1,9 @@
+// extrai o "cliente1" da URL
+const pathParts = window.location.pathname.split('/');
+const tenant = pathParts[1]; // cliente1
+
+
+
 const senhaInput = document.getElementById("password");
 const toggleSenha = document.getElementById("toggleSenha");
 
@@ -22,12 +28,14 @@ form.addEventListener('submit', async (e) => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
+
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                "X-Tenant": tenant
             },
             body: JSON.stringify({ email, senha: password })
         });
@@ -38,6 +46,7 @@ form.addEventListener('submit', async (e) => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('nome', data.nome);
             localStorage.setItem('usuario_id', data.usuario_id);
+            localStorage.setItem("tenant", tenant);
             const role = JSON.parse(atob(data.token.split('.')[1])).role; 
 
             if (role === 'cliente') {

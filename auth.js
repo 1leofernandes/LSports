@@ -15,38 +15,70 @@ const API_BASE_URL = process.env.NODE_ENV === 'development'
 router.post('/login', async (req, res) => {
     const { email, senha } = req.body;
 
+    // 1️⃣ Capturar o tenant vindo do frontend
+    const tenantSub = req.headers["x-tenant"];
+    if (!tenantSub) {
+        return res.status(400).json({ message: "Tenant não informado." });
+    }
+
     try {
-        const { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+        // 2️⃣ Buscar o tenant no banco
+        const tenantResult = await db.query(
+            "SELECT id FROM tenants WHERE subdomain = $1",
+            [tenantSub]
+        );
+
+        if (tenantResult.rows.length === 0) {
+            return res.status(404).json({ message: "Tenant inválido." });
+        }
+
+        const tenantId = tenantResult.rows[0].id;
+
+        // 3️⃣ Buscar o usuário dentro do tenant correto
+        const { rows } = await db.query(
+            "SELECT * FROM usuarios WHERE email = $1 AND tenant_id = $2",
+            [email, tenantId]
+        );
 
         if (rows.length === 0) {
-            return res.status(401).json({ message: 'Email ou senha inválidos' });
+            return res.status(401).json({ message: "Email ou senha inválidos" });
         }
 
         const usuario = rows[0];
-        const senhaValida = bcrypt.compareSync(senha, usuario.senha);
 
+        // 4️⃣ Validar senha
+        const senhaValida = bcrypt.compareSync(senha, usuario.senha);
         if (!senhaValida) {
-            return res.status(401).json({ message: 'Email ou senha inválidos' });
+            return res.status(401).json({ message: "Email ou senha inválidos" });
         }
 
+        // 5️⃣ Criar token com tenant_id incluso
         const token = jwt.sign(
-            { id: usuario.id, nome: usuario.nome, role: usuario.role },
-            'secreta',
+            {
+                id: usuario.id,
+                nome: usuario.nome,
+                role: usuario.role,
+                tenant_id: tenantId
+            },
+            process.env.JWT_SECRET,
             { expiresIn: '365d' }
         );
 
+        // 6️⃣ Retornar dados ao cliente
         res.json({
-            message: 'Login bem-sucedido!',
+            message: "Login bem-sucedido!",
             token,
-            usuario_id: usuario.id, // Incluindo o ID do usuário na resposta
+            usuario_id: usuario.id,
             role: usuario.role,
             nome: usuario.nome
         });
+
     } catch (err) {
-        console.error('Erro ao fazer login:', err);
-        res.status(500).json({ message: 'Erro interno ao fazer login' });
+        console.error("Erro ao fazer login:", err);
+        res.status(500).json({ message: "Erro interno ao fazer login" });
     }
 });
+
 
 
 // Esqueci minha senha (enviar e-mail com o token)
