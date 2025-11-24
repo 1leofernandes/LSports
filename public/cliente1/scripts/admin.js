@@ -34,16 +34,18 @@ async function validarUsuario() {
     const token = localStorage.getItem('token');
     if (!token) {
         alert('Você não está logado. Redirecionando para o login...');
-        window.location.href = 'admin-login.html';
+        window.location.href = 'login.html';
         return;
     }
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
+        // Prefer role-based check. Backwards-compatible with legacy adminEmails list.
+        const isAdminRole = payload.role === 'admin' || payload.roles === 'admin';
         const userEmail = payload.email;
 
-        if (!adminEmails.includes(userEmail)) {
+        if (!isAdminRole && !adminEmails.includes(userEmail)) {
             alert('Acesso negado. Somente administradores podem acessar esta página.');
-            window.location.href = 'admin-login.html';
+            window.location.href = 'login.html';
             return;
         }
     } catch (error) {

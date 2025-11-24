@@ -53,6 +53,8 @@ form.addEventListener('submit', async (e) => {
                 window.location.href = 'agendamento.html'; 
             } else if (role === 'funcionario') {
                 window.location.href = 'funcionario.html';
+            } else if (role === 'admin') {
+                window.location.href = 'admin.html';
             }
         } else {
             alert(data.message);

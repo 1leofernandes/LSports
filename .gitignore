@@ -1,11 +1,9 @@
 .vercel
 
-.readme.md
-
-.readme
+readme.md
 
 .vscode/settings.json
 
 .env
 
-..env
+.env*
