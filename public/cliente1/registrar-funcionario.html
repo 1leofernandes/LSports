@@ -79,7 +79,9 @@
             </div>
         </div>
 
-        <!-- Modal de mensagem (alert-like) -->
+        <!-- Toast container (bootstrap) for messages -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+        <!-- Modal de mensagem (alert-like) kept for fallback -->
         <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -94,6 +96,7 @@
                 </div>
             </div>
         </div>
+        <script src="scripts/common.js" defer></script>
         <script src="scripts/registrar-funcionario.js" defer></script>
 </body>
 </html>

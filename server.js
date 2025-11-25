@@ -35,6 +35,27 @@ const authRouter = require('./auth');
 app.use('/auth', authRouter);
 
 // ------------------------------------------------------------
+// Ensure audit table exists for role change logging
+async function ensureAuditTable() {
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS role_changes (
+        id serial PRIMARY KEY,
+        tenant_id integer NOT NULL,
+        user_id integer NOT NULL,
+        changed_by integer NOT NULL,
+        old_role text NOT NULL,
+        new_role text NOT NULL,
+        changed_at timestamptz NOT NULL DEFAULT NOW()
+      );
+    `);
+    console.log('Audit table role_changes ensured');
+  } catch (err) {
+    console.error('Error ensuring role_changes table:', err);
+  }
+}
+ensureAuditTable();
+// ------------------------------------------------------------
 // Helper: wrapper para executar queries com app.current_tenant
 // ------------------------------------------------------------
 async function withTenantClient(tenantId, handler) {
@@ -736,11 +757,33 @@ app.put('/admin/usuarios/:id/role', authenticateToken, isAdmin, async (req, res)
 
       const r = await client.query(`UPDATE usuarios SET role = $1 WHERE tenant_id = $2 AND id = $3 RETURNING id, nome, email, role`, [role, req.tenant_id, id]);
       if (r.rowCount === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
+      // inserir auditoria de mudança de role
+      try {
+        await client.query(
+          `INSERT INTO role_changes (tenant_id, user_id, changed_by, old_role, new_role) VALUES ($1,$2,$3,$4,$5)`,
+          [req.tenant_id, id, req.user.id, currentRole, role]
+        );
+      } catch (err) {
+        console.error('Erro ao inserir auditoria de role_changes:', err);
+      }
       return res.json({ message: 'Role atualizada com sucesso', user: r.rows[0] });
     });
   } catch (err) {
     console.error('PUT /admin/usuarios/:id/role error:', err);
     if (!res.headersSent) res.status(500).json({ message: 'Erro ao atualizar role' });
+  }
+});
+
+// Listar auditorias de mudança de role (apenas admin)
+app.get('/admin/role-changes', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    await withTenantClient(req.tenant_id, async (client) => {
+      const r = await client.query(`SELECT id, user_id, changed_by, old_role, new_role, changed_at FROM role_changes WHERE tenant_id = $1 ORDER BY changed_at DESC LIMIT 100`, [req.tenant_id]);
+      return res.json(r.rows);
+    });
+  } catch (err) {
+    console.error('/admin/role-changes GET error:', err);
+    if (!res.headersSent) res.status(500).json({ message: 'Erro ao buscar auditorias' });
   }
 });
 

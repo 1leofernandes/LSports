@@ -44,24 +44,21 @@ function formatarData(dataString) {
 async function validarUsuario() {
     const token = localStorage.getItem('token');
     if (!token) {
-        alert('Você não está logado. Redirecionando para o login...');
+        await showToast('Você não está logado. Redirecionando para o login...', { type: 'warning' });
         window.location.href = 'login.html';
         return;
     }
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        // Prefer role-based check. Backwards-compatible with legacy adminEmails list.
         const isAdminRole = payload.role === 'admin' || payload.roles === 'admin';
-        const userEmail = payload.email;
-
-        if (!isAdminRole && !adminEmails.includes(userEmail)) {
-            alert('Acesso negado. Somente administradores podem acessar esta página.');
+        if (!isAdminRole) {
+            await showToast('Acesso negado. Somente administradores podem acessar esta página.', { type: 'error' });
             window.location.href = 'login.html';
             return;
         }
     } catch (error) {
         console.error('Erro na autenticação:', error);
-        alert('Erro na autenticação. Tente novamente.');
+        await showToast('Erro na autenticação. Tente novamente.', { type: 'error' });
         window.location.href = 'login.html';
     }
 }

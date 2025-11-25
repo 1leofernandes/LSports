@@ -26,27 +26,34 @@ const adminEmails = ['leonardoff24@gmail.com', 'BONIEQUES2020@GMAIL.COM', 'bonie
 const form = document.getElementById('registrarFuncionarioForm');
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Setup modal instances first (so validarUsuario can use modal-based messages early)
+    const usuariosModalEl = document.getElementById('usuariosModal');
+    if (usuariosModalEl && window.bootstrap && typeof window.bootstrap.Modal === 'function') window.usuariosModal = new bootstrap.Modal(usuariosModalEl);
+    const confirmModalEl = document.getElementById('confirmModal');
+    if (confirmModalEl && window.bootstrap && typeof window.bootstrap.Modal === 'function') window.confirmModal = new bootstrap.Modal(confirmModalEl);
+    const messageModalEl = document.getElementById('messageModal');
+    if (messageModalEl && window.bootstrap && typeof window.bootstrap.Modal === 'function') window.messageModal = new bootstrap.Modal(messageModalEl);
+    // After modals are ready, proceed with validation
     validarUsuario();
     // Hook 'Ver usuários' button
     const btnVerUsuarios = document.getElementById('btnVerUsuarios');
     if (btnVerUsuarios) btnVerUsuarios.addEventListener('click', abrirListaUsuarios);
     // Modal instances
-    const usuariosModalEl = document.getElementById('usuariosModal');
-    if (usuariosModalEl) window.usuariosModal = new bootstrap.Modal(usuariosModalEl);
-    const confirmModalEl = document.getElementById('confirmModal');
-    if (confirmModalEl) window.confirmModal = new bootstrap.Modal(confirmModalEl);
-    const messageModalEl = document.getElementById('messageModal');
-    if (messageModalEl) window.messageModal = new bootstrap.Modal(messageModalEl);
+    // (modals were initialized above)
     // hook confirm buttons
     const confirmOk = document.getElementById('confirmOk');
     const confirmCancel = document.getElementById('confirmCancel');
     if (confirmOk) confirmOk.addEventListener('click', () => {
         if (window.__confirmResolve) window.__confirmResolve(true);
-        if (window.confirmModal) window.confirmModal.hide();
+        const el = document.getElementById('confirmModal');
+        const inst = (window.bootstrap && window.bootstrap.Modal) ? window.bootstrap.Modal.getInstance(el) : window.confirmModal;
+        if (inst && typeof inst.hide === 'function') inst.hide();
     });
     if (confirmCancel) confirmCancel.addEventListener('click', () => {
         if (window.__confirmResolve) window.__confirmResolve(false);
-        if (window.confirmModal) window.confirmModal.hide();
+        const el = document.getElementById('confirmModal');
+        const inst = (window.bootstrap && window.bootstrap.Modal) ? window.bootstrap.Modal.getInstance(el) : window.confirmModal;
+        if (inst && typeof inst.hide === 'function') inst.hide();
     });
     // message modal close: just hide
     // search debounce
@@ -73,12 +80,13 @@ async function validarUsuario() {
         return;
     }
     try {
-        // Decodifica o token JWT manualmente para obter o e-mail
-        const payload = JSON.parse(atob(token.split('.')[1])); // Decodifica o payload do token
-        const userEmail = payload.email; // Extrai o e-mail do payload
+        // Decodifica o token JWT manualmente para obter o role / id
+            const payloadUser = JSON.parse(atob(token.split('.')[1])); // Decodifica o payload do token
+        const payloadRole = payload.role; // role do token
+            const userId = payloadUser.id;
 
-        // Verifica se o e-mail do usuário está na lista de administradores
-        if (!adminEmails.includes(userEmail)) {
+        // Verifica se o role do usuário é admin
+        if (payloadRole !== 'admin') {
             await showMessage('Acesso negado. Somente administradores podem acessar esta página.');
             window.location.href = 'login.html';
             return;
@@ -124,10 +132,11 @@ form.addEventListener('submit', async (e) => {
 });
 
 async function abrirListaUsuarios() {
-    const modal = window.usuariosModal;
-    if (!modal) return;
+    const modalEl = document.getElementById('usuariosModal');
+    const inst = (window.bootstrap && window.bootstrap.Modal) ? window.bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl) : window.usuariosModal;
+    if (!inst) return;
     await carregarUsuarios();
-    modal.show();
+    if (typeof inst.show === 'function') inst.show();
 }
 
 async function carregarUsuarios() {
@@ -143,15 +152,15 @@ async function carregarUsuarios() {
         if (!res.ok) throw new Error('Erro ao carregar usuários.');
             const usuarios = await res.json();
             usuariosCache = usuarios; // cache for filtering
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const currentEmail = payload.email;
+            const payloadUser = JSON.parse(atob(token.split('.')[1]));
+            const currentUserId = payloadUser.id;
         if (!Array.isArray(usuarios) || usuarios.length === 0) {
             listEl.innerHTML = '<p>Nenhum usuário encontrado.</p>';
             return;
         }
 
         listEl.innerHTML = usuarios.map(u => {
-            const isSelf = u.email === currentEmail;
+                const isSelf = (currentUserId == u.id);
             let actionBtn = '';
             if (!isSelf) {
                 if (u.role === 'cliente') {
@@ -197,8 +206,10 @@ async function carregarUsuarios() {
             return;
         }
         // event delegation container
+        const token = localStorage.getItem('token');
+        const currentUserId = token ? JSON.parse(atob(token.split('.')[1])).id : null;
         filtered.forEach(u => {
-            const isSelf = (localStorage.getItem('token') && JSON.parse(atob(localStorage.getItem('token').split('.')[1])).email === u.email);
+            const isSelf = (currentUserId == u.id);
             const card = document.createElement('div');
             card.className = 'card mb-2 p-2 d-flex justify-content-between align-items-center';
 
@@ -295,24 +306,59 @@ function showConfirm(message) {
         const body = document.getElementById('confirmModalBody');
         if (body) body.textContent = message;
         window.__confirmResolve = (v) => { window.__confirmResolve = null; resolve(v); };
-        window.confirmModal.show();
+        const el = document.getElementById('confirmModal');
+        const inst = (window.bootstrap && window.bootstrap.Modal) ? window.bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el) : window.confirmModal;
+        if (inst && typeof inst.show === 'function') inst.show();
     });
 }
 
 // showMessage: returns Promise<void> when modal gets closed
 function showMessage(message) {
+    // Prefer to use toast-based non-blocking UI; fallback to modal or native alert
+    return showToast(message);
+}
+
+// showToast: returns Promise that resolves once the toast is hidden
+function showToast(message, options = {}) {
     return new Promise((resolve) => {
-        if (!window.messageModal) {
+        const container = document.getElementById('toastContainer');
+        if (!container || !(window.bootstrap && window.bootstrap.Toast)) {
+            // fallback to modal or native alert
+            if (window.messageModal) {
+                // use modal as fallback
+                const body = document.getElementById('messageModalBody');
+                if (body) body.textContent = message;
+                const el = document.getElementById('messageModal');
+                const instModal = (window.bootstrap && window.bootstrap.Modal) ? window.bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el) : window.messageModal;
+                const handler = () => resolve();
+                el.addEventListener('hidden.bs.modal', handler, { once: true });
+                instModal.show();
+                return;
+            }
             window.alert(message);
             return resolve();
         }
-        const body = document.getElementById('messageModalBody');
-        if (body) body.textContent = message;
-        // Attach single-time handler
-        const handler = () => { if (window.messageModal) window.messageModal._element.removeEventListener('hidden.bs.modal', handler); resolve(); };
-        // Use bootstrap modal shown/hidden events
-        const modalEl = document.getElementById('messageModal');
-        modalEl.addEventListener('hidden.bs.modal', handler, { once: true });
-        window.messageModal.show();
+
+        // Build toast element
+        const toastEl = document.createElement('div');
+        toastEl.className = 'toast align-items-center text-white bg-primary border-0';
+        toastEl.role = 'alert';
+        toastEl.ariaLive = 'assertive';
+        toastEl.ariaAtomic = 'true';
+        toastEl.style.minWidth = '200px';
+        toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        container.appendChild(toastEl);
+        const toast = new bootstrap.Toast(toastEl, { autohide: true, delay: options.delay || 4000 });
+        // Resolve when hidden
+        toastEl.addEventListener('hidden.bs.toast', () => {
+            container.removeChild(toastEl);
+            resolve();
+        }, { once: true });
+        toast.show();
     });
 }
