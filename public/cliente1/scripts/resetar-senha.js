@@ -1,6 +1,9 @@
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
     : 'https://lsports.onrender.com';
+// extrai tenant do path (ex: /cliente1/...) — usado pelo backend para identificar tenant
+const _pathParts = window.location.pathname.split('/');
+const tenant = _pathParts[1] || localStorage.getItem('tenant') || '';
 document.getElementById('resetForm').addEventListener('submit', async function(event) {
     event.preventDefault();
     
@@ -19,7 +22,8 @@ document.getElementById('resetForm').addEventListener('submit', async function(e
         const response = await fetch(`${API_BASE_URL}/auth/resetar-senha/${token}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Tenant': tenant
             },
             body: JSON.stringify({ senha })
         });

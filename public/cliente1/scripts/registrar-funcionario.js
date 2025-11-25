@@ -16,6 +16,9 @@ toggleSenha.addEventListener("click", function () {
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
     : 'https://lsports.onrender.com';
+// extrai tenant do path (ex: /cliente1/...) — usado pelo backend para identificar tenant
+const _pathParts = window.location.pathname.split('/');
+const tenant = _pathParts[1] || localStorage.getItem('tenant') || '';
 function logout() {
     window.location.href = 'admin.html';
 }
@@ -59,11 +62,14 @@ form.addEventListener('submit', async (e) => {
     const senha = document.getElementById('password').value;
 
     try {
+        const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE_URL}/registrar-funcionario`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant
             },
             body: JSON.stringify({ nome, telefone, email, senha })
         });

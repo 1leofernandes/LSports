@@ -1,4 +1,7 @@
 const API_BASE_URL = 'https://lsports.onrender.com';
+// extrai tenant do path (ex: /cliente1/...) — usado pelo backend para identificar tenant
+const _pathParts = window.location.pathname.split('/');
+const tenant = _pathParts[1] || localStorage.getItem('tenant') || '';
 let chartDiario, chartDiasSemana, chartMensal;
 let currentData = {};
 let periodoSelecionado = 3;
@@ -40,6 +43,7 @@ async function loadData(months) {
         const response = await fetch(`${API_BASE_URL}/relatorio-financeiro?periodo=${months}`, {
             headers: { 
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Content-Type': 'application/json'
             }
         });

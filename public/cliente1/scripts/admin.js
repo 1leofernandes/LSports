@@ -1,6 +1,17 @@
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
     : 'https://lsports.onrender.com';
+// extrai tenant do path (ex: /cliente1/...) e fallback para localStorage
+const _parts_admin = window.location.pathname.split('/').filter(Boolean);
+let tenant = '';
+if (_parts_admin.length === 0) {
+    tenant = '';
+} else if (_parts_admin[0] === 'public') {
+    tenant = _parts_admin[1] || '';
+} else {
+    tenant = _parts_admin[0] || '';
+}
+if (!tenant) tenant = localStorage.getItem('tenant') || '';
 const adminEmails = ['leonardoff24@gmail.com', 'BONIEQUES2020@GMAIL.COM', 'bonieques2020@gmail.com', 'guyhenryck06@gmail.com'];
 
 let modoHistorico = false;
@@ -69,7 +80,7 @@ async function carregarHistoricoCompleto() {
     const token = localStorage.getItem('token');
     try {
         const res = await fetch(`${API_BASE_URL}/agendamentos/historico`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
         });
         
         if (!res.ok) throw new Error('Erro ao carregar histórico');
@@ -176,7 +187,7 @@ async function carregarAgendamentos() {
     const token = localStorage.getItem('token');
     try {
         const res = await fetch(`${API_BASE_URL}/agendamentos`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
         });
         if (!res.ok) throw new Error('Erro ao carregar agendamentos.');
         const agendamentos = await res.json();
@@ -236,6 +247,7 @@ async function marcarComoPago(id) {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
@@ -267,6 +279,7 @@ async function excluirAgendamento(id) {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
@@ -304,6 +317,7 @@ async function bloquearDia() {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ data, quadra })
@@ -340,6 +354,7 @@ async function bloquearHorario() {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ data, hora_inicio, hora_fim, quadra })
@@ -380,6 +395,7 @@ async function bloquearHorarioRecorrente() {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
+                , 'X-Tenant': tenant
             },
             body: JSON.stringify({ 
                 nome: nome,
@@ -408,7 +424,7 @@ async function carregarBloqueiosRecorrentes() {
     try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE_URL}/bloqueios-recorrentes`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${token}`, 'X-Tenant': tenant }
         });
         
         if (!res.ok) throw new Error('Erro ao carregar bloqueios recorrentes');
@@ -426,10 +442,10 @@ async function carregarBloqueios() {
         const token = localStorage.getItem('token');
         const [bloqueiosNormais, bloqueiosRecorrentes] = await Promise.all([
             fetch(`${API_BASE_URL}/bloqueios`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
             }),
             fetch(`${API_BASE_URL}/bloqueios-recorrentes`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
             })
         ]);
         
@@ -513,6 +529,7 @@ async function removerBloqueio(id, isRecorrente) {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
@@ -533,8 +550,8 @@ document.getElementById('btnRegistrarFuncionario').addEventListener('click', fun
 async function carregarFuncionarios() {
     const token = localStorage.getItem('token');
     try {
-        const res = await fetch(`${API_BASE_URL}/funcionarios`, {
-            headers: { Authorization: `Bearer ${token}` }
+        const res = await fetch(`${API_BASE_URL}/admin/funcionarios`, {
+            headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
         });
         
         if (!res.ok) throw new Error('Erro ao carregar funcionários');
@@ -576,6 +593,7 @@ async function excluirFuncionario(id) {
             method: 'DELETE',
             headers: { 
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
@@ -593,53 +611,6 @@ async function excluirFuncionario(id) {
         M.toast({html: 'Erro ao excluir funcionário', classes: 'red'});
     }
 }
-// Função de busca para o painel administrativo
-// function configurarBuscaAgendamentos() {
-// const buscaInput = document.getElementById('busca-agendamentos');
-// let todosAgendamentos = [];
-
-// Carregar agendamentos e configurar busca
-async function carregarEConfigurar() {
-    const token = localStorage.getItem('token');
-    try {
-    const res = await fetch(`${API_BASE_URL}/agendamentos`, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('Erro ao carregar agendamentos.');
-    todosAgendamentos = await res.json();
-    filtrarAgendamentos();
-    } catch (error) {
-    console.error('Erro:', error);
-    }
-}
-
-// Função de filtro
-function filtrarAgendamentos() {
-    const termo = buscaInput.value.toLowerCase();
-    const lista = document.getElementById('agendamentos-list');
-    
-    if (!termo) {
-    // Mostrar todos se não há termo de busca
-    renderizarAgendamentos(todosAgendamentos);
-    return;
-    }
-    
-    const resultados = todosAgendamentos.filter(a => {
-    return (
-        a.nome_cliente.toLowerCase().includes(termo) ||
-        a.telefone_cliente.includes(termo) ||
-        new Date(a.data_agendada).toLocaleDateString('pt-BR').includes(termo) ||
-        a.hora_inicio.includes(termo) ||
-        a.hora_fim.includes(termo) ||
-        a.quadra.toString().includes(termo)
-    );
-    });
-    
-    renderizarAgendamentos(resultados);
-}
-
-// Função para renderizar resultados
-// function renderizarAgendamentos(agendamentos) {
 //     const lista = document.getElementById('agendamentos-list');
 //     if (agendamentos.length) {
 //         lista.innerHTML = agendamentos.map(a => `
@@ -672,12 +643,7 @@ function filtrarAgendamentos() {
 // }
 
 
-// Configurar evento de input
-buscaInput.addEventListener('input', filtrarAgendamentos);
-
-// Inicializar
-carregarEConfigurar();
-//}
+// End duplicate search function block (kept main configurarBuscaAgendamentos implementation)
 
 // Adicionar ao DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {

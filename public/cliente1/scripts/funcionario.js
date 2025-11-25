@@ -2,6 +2,10 @@ const API_BASE_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:3000' 
     : 'https://lsports.onrender.com';
 
+// extrai tenant do path (ex: /cliente1/...) — usado pelo backend para identificar tenant
+const _pathParts = window.location.pathname.split('/');
+const tenant = _pathParts[1] || localStorage.getItem('tenant') || '';
+
 // Variáveis globais
 let modoHistorico = false;
 let todosAgendamentos = [];
@@ -36,7 +40,7 @@ async function validarUsuario() {
     }
     try {
         const res = await fetch(`${API_BASE_URL}/user-info`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
         });
         if (!res.ok) throw new Error('Erro ao validar usuário.');
         const data = await res.json();
@@ -67,7 +71,7 @@ async function carregarHistoricoCompleto() {
     const token = localStorage.getItem('token');
     try {
         const res = await fetch(`${API_BASE_URL}/agendamentos/historico`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
         });
         
         if (!res.ok) throw new Error('Erro ao carregar histórico');
@@ -175,7 +179,7 @@ async function carregarAgendamentos() {
     const token = localStorage.getItem('token');
     try {
         const res = await fetch(`${API_BASE_URL}/agendamentos`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
         });
         if (!res.ok) throw new Error('Erro ao carregar agendamentos.');
         const agendamentos = await res.json();
@@ -236,6 +240,7 @@ async function marcarComoPago(id) {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
@@ -267,6 +272,7 @@ async function excluirAgendamento(id) {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
@@ -303,6 +309,7 @@ async function bloquearDia() {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ data, quadra })
@@ -339,6 +346,7 @@ async function bloquearHorario() {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ data, hora_inicio, hora_fim, quadra })
@@ -356,7 +364,7 @@ async function carregarBloqueios() {
     try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE_URL}/bloqueios`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
         });
         
         if (!res.ok) throw new Error('Erro ao carregar bloqueios.');
@@ -402,6 +410,7 @@ async function removerBloqueio(id) {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'X-Tenant': tenant,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
