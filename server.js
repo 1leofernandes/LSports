@@ -695,6 +695,56 @@ app.delete('/admin/funcionarios/:id', authenticateToken, isAdmin, async (req, re
   }
 });
 
+// -------------------- ADMIN: USUÁRIOS (LIST & ROLE UPDATE) --------------------
+
+// Listar todos usuários do tenant (admin)
+app.get('/admin/usuarios', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    await withTenantClient(req.tenant_id, async (client) => {
+      const r = await client.query(`SELECT id, nome, email, role FROM usuarios WHERE tenant_id = $1 ORDER BY nome`, [req.tenant_id]);
+      return res.json(r.rows);
+    });
+  } catch (err) {
+    console.error('/admin/usuarios GET error:', err);
+    if (!res.headersSent) res.status(500).json({ message: 'Erro ao buscar usuários' });
+  }
+});
+
+// Atualizar role de um usuário (apenas promover para funcionário por enquanto)
+app.put('/admin/usuarios/:id/role', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { role } = req.body;
+    // permitimos apenas promover para 'funcionario' ou rebaixar para 'cliente'
+    const allowed = ['cliente', 'funcionario'];
+    if (!allowed.includes(role)) return res.status(400).json({ message: 'Role inválida para este endpoint' });
+
+    // Bloquear alteração de role do próprio admin por segurança
+    const targetId = parseInt(id, 10);
+    const userIdNum = parseInt(req.user && req.user.id ? req.user.id : 0, 10);
+    if (userIdNum === targetId) {
+      return res.status(403).json({ message: 'Alteração de role do próprio usuário não é permitida' });
+    }
+
+    await withTenantClient(req.tenant_id, async (client) => {
+      // ensure allowed transitions only: cliente<->funcionario (not admin changes)
+      const cur = await client.query(`SELECT role FROM usuarios WHERE tenant_id = $1 AND id = $2`, [req.tenant_id, id]);
+      if (cur.rows.length === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
+      const currentRole = cur.rows[0].role;
+      const validTransition = (currentRole === 'cliente' && role === 'funcionario') || (currentRole === 'funcionario' && role === 'cliente');
+      if (!validTransition) return res.status(400).json({ message: 'Transição de role inválida' });
+
+      const r = await client.query(`UPDATE usuarios SET role = $1 WHERE tenant_id = $2 AND id = $3 RETURNING id, nome, email, role`, [role, req.tenant_id, id]);
+      if (r.rowCount === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
+      return res.json({ message: 'Role atualizada com sucesso', user: r.rows[0] });
+    });
+  } catch (err) {
+    console.error('PUT /admin/usuarios/:id/role error:', err);
+    if (!res.headersSent) res.status(500).json({ message: 'Erro ao atualizar role' });
+  }
+});
+
+
 // -------------------- RELATÓRIO FINANCEIRO --------------------
 
 app.get('/relatorio-financeiro', authenticateToken, async (req, res) => {

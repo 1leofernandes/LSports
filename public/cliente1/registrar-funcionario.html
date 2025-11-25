@@ -34,10 +34,66 @@
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-custom-red">Registrar</button>
             </div>
+            <div class="d-grid gap-2 mt-3">
+                <button type="button" id="btnVerUsuarios" class="btn btn-outline-secondary">Ver usuários</button>
+            </div>
         </form>
         <p class="mt-3 text-center"><a href="login.html" class="custom-link">Já tem uma conta? Faça login</a></p>
     </div>
 
-    <script src="scripts/registrar-funcionario.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Modal para listar/manipular usuários -->
+        <div class="modal fade" id="usuariosModal" tabindex="-1" aria-labelledby="usuariosModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="usuariosModalLabel">Usuários registrados</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <input type="search" class="form-control" id="usuariosSearch" placeholder="Pesquisar por nome ou email">
+                        </div>
+                        <div id="usuarios-list"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal de confirmação customizada -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmação</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body" id="confirmModalBody"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="confirmCancel">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="confirmOk">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de mensagem (alert-like) -->
+        <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Mensagem</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body" id="messageModalBody"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="scripts/registrar-funcionario.js" defer></script>
 </body>
 </html>
