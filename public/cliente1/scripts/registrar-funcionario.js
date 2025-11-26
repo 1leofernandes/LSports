@@ -80,13 +80,16 @@ async function validarUsuario() {
         return;
     }
     try {
-        // Decodifica o token JWT manualmente para obter o role / id
-            const payloadUser = JSON.parse(atob(token.split('.')[1])); // Decodifica o payload do token
-        const payloadRole = payload.role; // role do token
-            const userId = payloadUser.id;
-
+        // Prefer server-side validation: /user-info ensures token validity and tenant match
+        const res = await fetch(`${API_BASE_URL}/user-info`, {
+            headers: { Authorization: `Bearer ${token}`, 'X-Tenant': tenant }
+        });
+        if (!res.ok) {
+            throw new Error('Token inválido ou expirado');
+        }
+        const userInfo = await res.json();
         // Verifica se o role do usuário é admin
-        if (payloadRole !== 'admin') {
+        if (userInfo.role !== 'admin' && userInfo.roles !== 'admin') {
             await showMessage('Acesso negado. Somente administradores podem acessar esta página.');
             window.location.href = 'login.html';
             return;
