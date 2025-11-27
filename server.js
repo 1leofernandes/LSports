@@ -42,13 +42,20 @@ async function ensureAuditTable() {
       CREATE TABLE IF NOT EXISTS role_changes (
         id serial PRIMARY KEY,
         tenant_id integer NOT NULL,
-        user_id integer NOT NULL,
-        changed_by integer NOT NULL,
+        user_id text NOT NULL,
+        changed_by text NOT NULL,
         old_role text NOT NULL,
         new_role text NOT NULL,
         changed_at timestamptz NOT NULL DEFAULT NOW()
       );
     `);
+    // If the table existed previously and user_id/changed_by are integer, try to alter them to text
+    try {
+      await db.query(`ALTER TABLE role_changes ALTER COLUMN user_id TYPE text USING user_id::text`);
+      await db.query(`ALTER TABLE role_changes ALTER COLUMN changed_by TYPE text USING changed_by::text`);
+    } catch (e) {
+      // ignore errors from ALTER if not needed or if types already text
+    }
     console.log('Audit table role_changes ensured');
   } catch (err) {
     console.error('Error ensuring role_changes table:', err);
@@ -740,10 +747,10 @@ app.put('/admin/usuarios/:id/role', authenticateToken, isAdmin, async (req, res)
     const allowed = ['cliente', 'funcionario'];
     if (!allowed.includes(role)) return res.status(400).json({ message: 'Role inválida para este endpoint' });
 
-    // Bloquear alteração de role do próprio admin por segurança
-    const targetId = parseInt(id, 10);
-    const userIdNum = parseInt(req.user && req.user.id ? req.user.id : 0, 10);
-    if (userIdNum === targetId) {
+    // Bloquear alteração de role do próprio admin por segurança - suportar UUID/string ids
+    const targetId = String(id);
+    const currentUserId = String(req.user && req.user.id ? req.user.id : '');
+    if (currentUserId === targetId) {
       return res.status(403).json({ message: 'Alteração de role do próprio usuário não é permitida' });
     }
 
@@ -759,6 +766,7 @@ app.put('/admin/usuarios/:id/role', authenticateToken, isAdmin, async (req, res)
       if (r.rowCount === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
       // inserir auditoria de mudança de role
       try {
+        console.log('Inserting role_changes:', { tenant_id: req.tenant_id, user_id: id, changed_by: req.user.id, currentRole, newRole: role });
         await client.query(
           `INSERT INTO role_changes (tenant_id, user_id, changed_by, old_role, new_role) VALUES ($1,$2,$3,$4,$5)`,
           [req.tenant_id, id, req.user.id, currentRole, role]

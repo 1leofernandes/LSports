@@ -167,9 +167,9 @@ async function carregarUsuarios() {
             let actionBtn = '';
             if (!isSelf) {
                 if (u.role === 'cliente') {
-                    actionBtn = `<button class="btn btn-sm btn-primary me-1" onclick="alterarRole(${u.id}, 'funcionario')">Promover para funcionário</button>`;
+                    actionBtn = `<button class="btn btn-sm btn-primary me-1 action-btn" data-user-id="${u.id}" data-action="promote">Promover para funcionário</button>`;
                 } else if (u.role === 'funcionario') {
-                    actionBtn = `<button class="btn btn-sm btn-warning me-1" onclick="alterarRole(${u.id}, 'cliente')">Rebaixar para cliente</button>`;
+                    actionBtn = `<button class="btn btn-sm btn-warning me-1 action-btn" data-user-id="${u.id}" data-action="demote">Rebaixar para cliente</button>`;
                 } else { // admin or other - no actions
                     actionBtn = `<span class="badge bg-danger">Admin</span>`;
                 }
@@ -271,8 +271,8 @@ async function carregarUsuarios() {
         const id = btn.dataset.userId;
         const action = btn.dataset.action;
         if (!id || !action) return;
-        if (action === 'promote') alterarRole(parseInt(id, 10), 'funcionario');
-        else if (action === 'demote') alterarRole(parseInt(id, 10), 'cliente');
+        if (action === 'promote') alterarRole(id, 'funcionario');
+        else if (action === 'demote') alterarRole(id, 'cliente');
     }
 // Expose function to global scope so onclick in generated HTML can call it
 window.alterarRole = async function(id, newRole) {
