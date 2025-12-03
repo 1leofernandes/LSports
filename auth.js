@@ -2,14 +2,22 @@ require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-const db = require('./db'); // Certifique-se de que db.js usa o método .promise()
+const db = require('./db');
+const { Resend } = require('resend');
+const { authenticateToken, isAdmin, isFuncionarioOuAdmin } = require('./middlewares');
 
 const router = express.Router();
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const JWT_SECRET = process.env.JWT_SECRET || 'secreta';
 const API_BASE_URL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:3000'
-  : 'https://lsports.onrender.com';
+  : 'https://lsports-bufv.onrender.com';
 
+if (!RESEND_API_KEY) {
+  console.warn('⚠️  RESEND_API_KEY não definida no .env - emails não funcionarão');
+}
+
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 // Login
 router.post('/login', async (req, res) => {
@@ -82,23 +90,42 @@ router.post('/login', async (req, res) => {
 
 
 // Esqueci minha senha (enviar e-mail com o token)
-const { Resend } = require('resend');
-
-const resend = new Resend('re_9UknK8M2_MXGBA6UWZ4p8cB4XjVqJ71a9'); // sua API key
-
 router.post('/esqueci-senha', async (req, res) => {
     const { email } = req.body;
+    const tenantSub = req.headers['x-tenant'];
+
+    if (!tenantSub) {
+        return res.status(400).json({ message: 'Tenant não informado.' });
+    }
+
+    if (!resend) {
+        return res.status(500).json({ message: 'Serviço de email não configurado' });
+    }
 
     try {
-        const { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+        // Buscar tenant_id
+        const tenantResult = await db.query(
+            'SELECT id FROM tenants WHERE subdomain = $1',
+            [tenantSub]
+        );
+        if (tenantResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Tenant inválido' });
+        }
+        const tenantId = tenantResult.rows[0].id;
+
+        // Buscar usuário no tenant correto
+        const { rows } = await db.query(
+            'SELECT * FROM usuarios WHERE email = $1 AND tenant_id = $2',
+            [email, tenantId]
+        );
 
         if (rows.length === 0) {
             return res.status(400).json({ message: 'Email não cadastrado' });
         }
 
-        const token = jwt.sign({ id: rows[0].id }, 'secreta', { expiresIn: '25m' });
+        const token = jwt.sign({ id: rows[0].id, tenant_id: tenantId }, JWT_SECRET, { expiresIn: '25m' });
 
-        const link = `https://cantinhodoboni.vercel.app/cdb/resetar-senha.html?token=${token}`;
+        const link = `${API_BASE_URL}/${tenantSub}/resetar-senha.html?token=${token}`;
 
         const { data, error } = await resend.emails.send({
             from: 'LF Software <onboarding@resend.dev>',
@@ -139,13 +166,14 @@ router.post('/resetar-senha/:token', async (req, res) => {
         const senhaHash = await bcrypt.hash(senha, 8);
         
         // Verificação do token JWT
-        const decoded = jwt.verify(token, 'secreta');
+        const decoded = jwt.verify(token, JWT_SECRET);
         const userId = decoded.id;
+        const tenantId = decoded.tenant_id;
 
-        // Atualização no PostgreSQL (sintaxe atualizada)
+        // Atualização no PostgreSQL - validar tenant_id para segurança
         const { rowCount } = await db.query(
-            'UPDATE usuarios SET senha = $1 WHERE id = $2', 
-            [senhaHash, userId]
+            'UPDATE usuarios SET senha = $1 WHERE id = $2 AND tenant_id = $3', 
+            [senhaHash, userId, tenantId]
         );
 
         if (rowCount === 0) {
@@ -174,22 +202,5 @@ router.get('/funcionarios', async (req, res) => {
     }
 });
 
-
-function authenticateToken(req, res, next) {
-    const token = req.headers['authorization']?.split(' ')[1];
-    if (!token) {
-        return res.status(401).json({ error: 'Token não fornecido' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, secret);
-        req.user = decoded; // Adiciona os dados do token no req.user para uso nas rotas
-        next();
-    } catch (err) {
-        return res.status(403).json({ error: 'Token inválido' });
-    }
-}
-
-module.exports = authenticateToken;
 
 module.exports = router;

@@ -1,6 +1,6 @@
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
-    : 'https://lsports.onrender.com';
+    : 'https://lsports-bufv.onrender.com';
 // extrai tenant do path (ex: /cliente1/...) — usado pelo backend para identificar tenant
 const _pathParts = window.location.pathname.split('/');
 const tenant = _pathParts[1] || localStorage.getItem('tenant') || '';

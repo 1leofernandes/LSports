@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://lsports.onrender.com';
+const API_BASE_URL = 'https://lsports-bufv.onrender.com';
 // extrai tenant do path (ex: /cliente1/...) — usado pelo backend para identificar tenant
 const _pathParts = window.location.pathname.split('/');
 const tenant = _pathParts[1] || localStorage.getItem('tenant') || '';

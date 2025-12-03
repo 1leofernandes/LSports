@@ -20,7 +20,7 @@ toggleSenha.addEventListener("click", function () {
 });
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
-    : 'https://lsports.onrender.com';
+    : 'https://lsports-bufv.onrender.com';
 const form = document.getElementById('loginForm');
 
 form.addEventListener('submit', async (e) => {

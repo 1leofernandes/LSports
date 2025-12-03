@@ -1,6 +1,6 @@
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
-    : 'https://lsports.onrender.com';
+    : 'https://lsports-bufv.onrender.com';
 // extrai tenant do path (ex: /cliente1/...) e fallback para localStorage
 const _parts_admin = window.location.pathname.split('/').filter(Boolean);
 let tenant = '';
