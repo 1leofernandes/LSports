@@ -15,10 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secreta';
 
 // lista legacy de admin emails (mantive)
 const adminEmails = [
-  'leonardoff24@gmail.com',
-  'BONIEQUES2020@GMAIL.COM',
-  'bonieques2020@gmail.com',
-  'guyhenryck06@gmail.com'
+  'leonardoff24@gmail.com'
 ];
 
 // middlewares globais

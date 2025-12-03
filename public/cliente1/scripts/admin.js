@@ -12,7 +12,7 @@ if (_parts_admin.length === 0) {
     tenant = _parts_admin[0] || '';
 }
 if (!tenant) tenant = localStorage.getItem('tenant') || '';
-const adminEmails = ['leonardoff24@gmail.com', 'BONIEQUES2020@GMAIL.COM', 'bonieques2020@gmail.com', 'guyhenryck06@gmail.com'];
+const adminEmails = ['leonardoff24@gmail.com'];
 
 let modoHistorico = false;
 let todosAgendamentos = [];

@@ -22,7 +22,7 @@ const tenant = _pathParts[1] || localStorage.getItem('tenant') || '';
 function logout() {
     window.location.href = 'admin.html';
 }
-const adminEmails = ['leonardoff24@gmail.com', 'BONIEQUES2020@GMAIL.COM', 'bonieques2020@gmail.com', 'guyhenryck06@gmail.com'];
+const adminEmails = ['leonardoff24@gmail.com'];
 const form = document.getElementById('registrarFuncionarioForm');
 
 document.addEventListener('DOMContentLoaded', () => {
