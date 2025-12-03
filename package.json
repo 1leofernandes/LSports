@@ -21,7 +21,7 @@
     "materialize-css": "^1.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.11.3",
-    "nodemailer": "^6.9.15",
+    "nodemailer": "^6.10.1",
     "pg": "^8.15.6",
     "resend": "^4.8.0",
     "toastify-js": "^1.12.0"

@@ -3,21 +3,33 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 const { authenticateToken, isAdmin, isFuncionarioOuAdmin } = require('./middlewares');
 
 const router = express.Router();
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const JWT_SECRET = process.env.JWT_SECRET || 'secreta';
 const API_BASE_URL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:3000'
   : 'https://lsports-bufv.onrender.com';
 
-if (!RESEND_API_KEY) {
-  console.warn('⚠️  RESEND_API_KEY não definida no .env - emails não funcionarão');
-}
+// Configurar Nodemailer com Gmail
+const GMAIL_USER = process.env.GMAIL_USER;
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 
-const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+let transporter = null;
+
+if (GMAIL_USER && GMAIL_APP_PASSWORD) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: GMAIL_USER,
+      pass: GMAIL_APP_PASSWORD
+    }
+  });
+  console.log('✓ Nodemailer configurado com Gmail');
+} else {
+  console.warn('⚠️  GMAIL_USER ou GMAIL_APP_PASSWORD não definidas no .env - emails não funcionarão');
+}
 
 // Login
 router.post('/login', async (req, res) => {
@@ -68,7 +80,7 @@ router.post('/login', async (req, res) => {
                 role: usuario.role,
                 tenant_id: tenantId
             },
-            process.env.JWT_SECRET,
+            JWT_SECRET,
             { expiresIn: '365d' }
         );
 
@@ -98,7 +110,7 @@ router.post('/esqueci-senha', async (req, res) => {
         return res.status(400).json({ message: 'Tenant não informado.' });
     }
 
-    if (!resend) {
+    if (!transporter) {
         return res.status(500).json({ message: 'Serviço de email não configurado' });
     }
 
@@ -127,23 +139,25 @@ router.post('/esqueci-senha', async (req, res) => {
 
         const link = `${API_BASE_URL}/${tenantSub}/resetar-senha.html?token=${token}`;
 
-        const { data, error } = await resend.emails.send({
-            from: 'LF Software <onboarding@resend.dev>',
+        const mailOptions = {
+            from: GMAIL_USER,
             to: email,
-            subject: 'Redefinição de Senha',
+            subject: 'Redefinição de Senha - LSports',
             html: `
-                <p>Olá,</p>
-                <p>Você solicitou uma redefinição de senha. Clique no link abaixo para continuar:</p>
-                <a href="${link}">${link}</a>
-                <p>Este link expira em 25 minutos.</p>
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>Redefinição de Senha</h2>
+                    <p>Olá,</p>
+                    <p>Você solicitou uma redefinição de senha. Clique no botão abaixo para continuar:</p>
+                    <p><a href="${link}" style="background-color: #30186b; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Redefinir Senha</a></p>
+                    <p>Ou copie e cole este link no navegador:</p>
+                    <p><code>${link}</code></p>
+                    <p><strong>Este link expira em 25 minutos.</strong></p>
+                    <p>Se você não solicitou esta redefinição, ignore este email.</p>
+                </div>
             `
-        });
+        };
 
-        if (error) {
-            console.error('Erro ao enviar e-mail via Resend:', error);
-            return res.status(500).json({ message: 'Erro ao enviar o e-mail' });
-        }
-
+        await transporter.sendMail(mailOptions);
         res.json({ message: 'E-mail de redefinição enviado com sucesso!' });
 
     } catch (err) {
