@@ -30,14 +30,14 @@ body {
 }
 
 .btn-custom-red {
-    background-color: #af0e09;
+    background-color: #30186b;
     color: white;
     border: none;
     font-size: medium;
 }
 
 .btn-custom-red:hover {
-    background-color: #910a06;
+    background-color: #1e134b;
     color: white;
 }
 .form-label {

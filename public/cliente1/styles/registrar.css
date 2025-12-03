@@ -11,26 +11,31 @@ body {
 .lsports-icon {
     max-width: 100%;
     height: auto;
-    max-height: 330px;
-    margin-bottom: 15px;
+    max-height: 400px;
+    margin-bottom: 1px;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 210px;
+    margin-top: 1px;
 }
 .logoCountainer {
     padding: 20px;
 }
 .container {
     max-width: 400px;
-    background: white;
+    background: rgba(255,255,255,0.95);
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
     text-align: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+
+    /* subtle card shadow for depth */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
 }
 
 .btn-custom-red {
-    background-color: #af0e09;
+    background-color: #30186b;
     color: white;
     border: none;
     font-weight: bold;
@@ -38,7 +43,7 @@ body {
 }
 
 .btn-custom-red:hover {
-    background-color: #790e0b;
+    background-color: #1e134b;
     color: white;
     font-weight: bold;
 }
@@ -48,7 +53,7 @@ body {
 }
 
 .custom-link {
-    color: #af0e09;
+    color: #30186b;
     text-decoration: underline;
 }
 
