@@ -3,7 +3,6 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
-const nodemailer = require('nodemailer');
 const { authenticateToken, isAdmin, isFuncionarioOuAdmin } = require('./middlewares');
 
 const router = express.Router();
@@ -12,23 +11,46 @@ const API_BASE_URL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:3000'
   : 'https://lsports-bufv.onrender.com';
 
-// Configurar Nodemailer com Gmail
-const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
+// Configurar MailerSend
+const MAILERSEND_API_KEY = process.env.MAILERSEND_API_KEY;
+const MAILERSEND_FROM = process.env.MAILERSEND_FROM;
 
-let transporter = null;
-
-if (GMAIL_USER && GMAIL_APP_PASSWORD) {
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: GMAIL_USER,
-      pass: GMAIL_APP_PASSWORD
-    }
-  });
-  console.log('✓ Nodemailer configurado com Gmail');
+if (!MAILERSEND_API_KEY) {
+  console.warn('⚠️  MAILERSEND_API_KEY não definida no .env - emails não funcionarão');
+} else if (!MAILERSEND_FROM) {
+  console.warn('⚠️  MAILERSEND_FROM não definida no .env - use seu domínio autorizado');
 } else {
-  console.warn('⚠️  GMAIL_USER ou GMAIL_APP_PASSWORD não definidas no .env - emails não funcionarão');
+  console.log('✓ MailerSend configurado corretamente');
+}
+
+// Helper: envia email via MailerSend HTTP API
+async function sendMailerSendEmail(to, subject, html) {
+  if (!MAILERSEND_API_KEY || !MAILERSEND_FROM) return false;
+  try {
+    const payload = {
+      from: { email: MAILERSEND_FROM, name: 'LSports' },
+      to: [{ email: to }],
+      subject,
+      html
+    };
+    const res = await fetch('https://api.mailersend.com/v1/email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MAILERSEND_API_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error('MailerSend API error', res.status, txt);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('MailerSend request failed:', err);
+    return false;
+  }
 }
 
 // Login
@@ -110,7 +132,7 @@ router.post('/esqueci-senha', async (req, res) => {
         return res.status(400).json({ message: 'Tenant não informado.' });
     }
 
-    if (!transporter) {
+    if (!MAILERSEND_API_KEY || !MAILERSEND_FROM) {
         return res.status(500).json({ message: 'Serviço de email não configurado' });
     }
 
@@ -137,13 +159,9 @@ router.post('/esqueci-senha', async (req, res) => {
 
         const token = jwt.sign({ id: rows[0].id, tenant_id: tenantId }, JWT_SECRET, { expiresIn: '25m' });
 
-        const link = `${API_BASE_URL}/${tenantSub}/resetar-senha.html?token=${token}`;
+        const link = `https://l-sports.vercel.app//${tenantSub}/resetar-senha.html?token=${token}`;
 
-        const mailOptions = {
-            from: GMAIL_USER,
-            to: email,
-            subject: 'Redefinição de Senha - LSports',
-            html: `
+        const htmlBody = `
                 <div style="font-family: Arial, sans-serif; padding: 20px;">
                     <h2>Redefinição de Senha</h2>
                     <p>Olá,</p>
@@ -154,10 +172,11 @@ router.post('/esqueci-senha', async (req, res) => {
                     <p><strong>Este link expira em 25 minutos.</strong></p>
                     <p>Se você não solicitou esta redefinição, ignore este email.</p>
                 </div>
-            `
-        };
+            `;
 
-        await transporter.sendMail(mailOptions);
+        const ok = await sendMailerSendEmail(email, 'Redefinição de Senha - LSports', htmlBody);
+        if (!ok) throw new Error('Erro ao enviar e-mail via MailerSend');
+        
         res.json({ message: 'E-mail de redefinição enviado com sucesso!' });
 
     } catch (err) {
