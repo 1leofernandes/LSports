@@ -796,6 +796,12 @@ app.get('/relatorio-financeiro', authenticateToken, async (req, res) => {
   }
 });
 
+
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
+
 // ------------------------------------------------------------
 // Start server
 // ------------------------------------------------------------
