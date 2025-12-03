@@ -15,7 +15,7 @@
 }
 
 .btn-custom-red {
-    background-color: #af0e09;
+    background-color: #30186b;
     color: white;
     border: none;
     font-weight: bold;
@@ -24,13 +24,13 @@
 }
 
 .btn-custom-red:hover {
-    background-color: #790e0b;
+    background-color: #1e134b;
     color: white;
     font-weight: bold;
 }
 
 .custom-link {
-    color: #af0e09;
+    color: #30186b;
     text-decoration: none;
 }
 
@@ -52,6 +52,14 @@
 
 .form-control.error {
     border-color: red;
+}
+
+.form-label {
+    /*margin-right: 300px;*/
+    text-align: left;
+    display: block;
+    /* color: #1e134b; */
+    font-weight: bold;
 }
 .eye-icon {
     position: absolute;

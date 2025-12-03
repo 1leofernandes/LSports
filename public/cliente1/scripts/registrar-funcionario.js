@@ -279,22 +279,28 @@ window.alterarRole = async function(id, newRole) {
     const action = newRole === 'funcionario' ? 'promover' : 'rebaixar';
     if (!(await showConfirm(`Deseja realmente ${action} este usuário para ${newRole === 'funcionario' ? 'funcionário' : 'cliente'}?`))) return;
     const token = localStorage.getItem('token');
+    console.log(`[alterarRole] Iniciando: id=${id}, newRole=${newRole}, action=${action}, tenant=${tenant}`);
     try {
-        const res = await fetch(`${API_BASE_URL}/admin/usuarios/${id}/role`, {
+        const url = `${API_BASE_URL}/admin/usuarios/${id}/role`;
+        const body = JSON.stringify({ role: newRole });
+        console.log(`[alterarRole] URL: ${url}, Body: ${body}`);
+        const res = await fetch(url, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-Tenant': tenant },
-            body: JSON.stringify({ role: newRole })
+            body: body
         });
+        console.log(`[alterarRole] Response status: ${res.status}, ok: ${res.ok}`);
         const data = await res.json();
+        console.log(`[alterarRole] Response body:`, data);
         if (res.ok) {
-            await showMessage(data.message || 'Role atualizada com sucesso');
+            await showToast(data.message || 'Role atualizada com sucesso', { delay: 3000 });
             await carregarUsuarios();
         } else {
-            await showMessage(data.message || 'Erro ao atualizar role');
+            await showToast(data.message || 'Erro ao atualizar role', { delay: 3000 });
         }
     } catch (err) {
         console.error('Erro ao alterar role do usuário:', err);
-        await showMessage('Erro ao alterar role do usuário');
+        await showToast('Erro ao alterar role do usuário', { delay: 3000 });
     }
 }
 
