@@ -32,6 +32,20 @@ const authRouter = require('./auth');
 app.use('/auth', authRouter);
 
 // ------------------------------------------------------------
+// ROTAS DE MONITORAMENTO (antes de outras rotas para evitar interferência)
+// ------------------------------------------------------------
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
+// Rota HEAD para UptimeRobot (não retorna body, só headers)
+app.head('/ping', (req, res) => {
+  res.set('Content-Type', 'text/plain');
+  res.set('Content-Length', '0');
+  res.status(200).end();
+});
+
+// ------------------------------------------------------------
 // No audit table needed - just update usuarios directly
 // ------------------------------------------------------------
 // Helper: wrapper para executar queries com app.current_tenant
@@ -794,16 +808,6 @@ app.get('/relatorio-financeiro', authenticateToken, async (req, res) => {
     console.error('/relatorio-financeiro error:', err);
     if (!res.headersSent) res.status(500).json({ error: 'Erro ao gerar relatório' });
   }
-});
-
-
-app.get('/ping', (req, res) => {
-  res.status(200).send('pong');
-});
-
-// Rota HEAD para UptimeRobot (não retorna body, só headers)
-app.head('/ping', (req, res) => {
-  res.status(200).end();
 });
 
 

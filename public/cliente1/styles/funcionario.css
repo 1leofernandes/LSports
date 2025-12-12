@@ -134,6 +134,62 @@ input[type="time"] {
     height: 3rem;
     padding-top: 1rem;
 }
+
+/* Corrigir layout da barra de busca e botão histórico */
+.row[style*="display: flex"] {
+    flex-direction: column !important;
+    gap: 15px !important;
+    align-items: stretch !important;
+}
+
+.row[style*="display: flex"] .input-field {
+    margin-right: 0 !important;
+    margin-bottom: 0 !important;
+    flex: 1 !important;
+}
+
+.row[style*="display: flex"] .input-field input {
+    width: 100% !important;
+}
+
+.row[style*="display: flex"] #btn-historico {
+    width: 100% !important;
+    margin-top: 0 !important;
+    align-self: flex-start;
+}
+
+/* Corrigir botão de reservar para cliente */
+.card-panel div[style*="display: flex"] {
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+
+.card-panel div[style*="display: flex"] a {
+    width: 100% !important;
+    text-align: center !important;
+    margin-bottom: 10px;
+}
+
+.card-panel div[style*="display: flex"] p {
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Melhorar espaçamento geral em mobile */
+@media only screen and (max-width: 600px) {
+    main {
+        padding: 15px;
+    }
+    
+    .card-panel {
+        margin-bottom: 15px;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+}
 }
 
 .navheader {
