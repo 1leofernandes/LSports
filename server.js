@@ -801,6 +801,11 @@ app.get('/ping', (req, res) => {
   res.status(200).send('pong');
 });
 
+// Rota HEAD para UptimeRobot (não retorna body, só headers)
+app.head('/ping', (req, res) => {
+  res.status(200).end();
+});
+
 
 // ------------------------------------------------------------
 // Start server
