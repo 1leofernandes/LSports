@@ -30,7 +30,7 @@ body {
 /* Header */
 .header {
     /* header.jpg lives in ../assets relative to this CSS file */
-    background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url("../assets/headerbarra.png");
+    /* background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url("../assets/headerbarra.png"); */
     background-size: cover;
     background-position: center;
     padding: 2rem 1rem;
@@ -38,6 +38,7 @@ body {
     text-align: center;
     position: relative;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: linear-gradient(155deg, #142353 0%, #c2e45a 100%);
 }
 
 .imgheader {
