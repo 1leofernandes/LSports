@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bússola Financeira</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="assets/lsports-icon.png"/>
+    <link rel="stylesheet" href="styles/financeiro.css">
+</head>
+<body>
+    <div class="dashboard-header">
+        <nav>
+            <div class="nav-wrapper">
+                <a href="#" class="brand-logo">Bússola Financeira</a>
+                <ul class="right">
+                    <li><a href="admin.html" class="waves-effect"><i class="material-icons left">arrow_back</i>Voltar</a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <main class="container">
+        <!-- Filtros -->
+        <div class="row">
+            <div class="col s12">
+                <div class="card-panel">
+                    <h6>Período de Análise:</h6>
+                    <div class="filter-buttons">
+                        <a href="#!" class="btn waves-effect filter-btn active-filter" data-months="1">1 Mês</a>
+                        <a href="#!" class="btn waves-effect filter-btn" data-months="3">3 Meses</a>
+                        <a href="#!" class="btn waves-effect filter-btn" data-months="6">6 Meses</a>
+                        <a href="#!" class="btn waves-effect filter-btn" data-months="12">1 Ano</a>
+                    </div>
+                    
+                    <!-- Novo filtro de quadras -->
+                    <div class="quadra-filter">
+                        <h6>Filtrar por Quadra:</h6>
+                        <select id="quadra-filter" class="browser-default">
+                            <option value="todas" selected>Todas as Quadras</option>
+                            <option value="1">Quadra 1</option>
+                            <option value="2">Quadra 2</option>
+                            <!-- Adicione mais opções conforme necessário -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Métricas -->
+        <div class="row">
+            <div class="col s12 m6 l3">
+                <div class="card-panel metric-card">
+                    <h6>Faturamento</h6>
+                    <h4 id="faturamento-total">R$ 0,00</h4>
+                    <p id="comparativo-mensal" class="green-text"></p>
+                </div>
+            </div>
+            <div class="col s12 m6 l3">
+                <div class="card-panel metric-card">
+                    <h6>Agendamentos</h6>
+                    <h4 id="total-agendamentos">0</h4>
+                    <p id="taxa-ocupacao" class="blue-text"></p>
+                </div>
+            </div>
+            <div class="col s12 m6 l3">
+                <div class="card-panel metric-card">
+                    <h6>Melhor Dia</h6>
+                    <h4 id="melhor-dia">-</h4>
+                    <p id="valor-melhor-dia" class="orange-text"></p>
+                </div>
+            </div>
+            <div class="col s12 m6 l3">
+                <div class="card-panel metric-card">
+                    <h6>Dia Mais Frequente</h6>
+                    <h4 id="dia-frequente">-</h4>
+                    <p id="agendamentos-dia" class="purple-text"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Linha - Evolução Diária -->
+        <div class="row">
+            <div class="col s12">
+                <div class="chart-container">
+                    <h5><i class="material-icons left">show_chart</i> Evolução Diária</h5>
+                    <canvas id="graficoDiario"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Barras - Dias da Semana -->
+        <div class="row">
+            <div class="col s12 m6">
+                <div class="chart-container">
+                    <h5><i class="material-icons left">bar_chart</i> Performance por Dia da Semana</h5>
+                    <canvas id="graficoDiasSemana"></canvas>
+                </div>
+            </div>
+            
+            <!-- Comparativo Mensal -->
+            <div class="col s12 m6">
+                <div class="chart-container">
+                    <h5><i class="material-icons left">compare</i> Comparativo Mensal</h5>
+                    <canvas id="graficoMensal"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="scripts/financeiro.js" defer></script>
+</body>
+</html>

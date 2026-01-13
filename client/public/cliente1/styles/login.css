@@ -1,0 +1,129 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+
+    /* Full-bleed background image: no seams, scaled and centered */
+    background-image: url('../assets/background.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    background-color: #f8f9fa; /* fallback color */
+}
+
+.lsports-icon {
+    max-width: 100%;
+    height: auto;
+    max-height: 400px;
+    margin-bottom: 1px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1px;
+
+}
+.logoCountainer {
+    padding: 20px;
+}
+.container {
+    max-width: 400px;
+    background: rgba(255,255,255,0.95);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+
+    /* subtle card shadow for depth */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+}
+
+/* White glow behind the container to make it stand out over the background image */
+.container::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 22px;
+    background: rgba(255,255,255,0.65);
+    filter: blur(8px);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.btn-custom-red {
+    background-color: #30186b;
+    color: white;
+    border: none;
+    font-weight: bold;
+    font-size: medium;
+}
+
+.btn-custom-red:hover {
+    background-color: #1e134b;
+    color: white;
+    font-weight: bold;
+}
+.form-label {
+    /*margin-right: 300px;*/
+    text-align: left;
+    display: block;
+
+}
+.custom-link {
+    color: #30186b;
+    text-decoration: none;
+}
+
+.custom-link:hover {
+    text-decoration: underline;
+}
+/* Ícone do botão de login do administrador */
+.admlogin {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.admlogin img {
+    width: 30px;
+    height: 30px;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 70%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+}
+
+.eye-icon:hover {
+    color: #333;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #30186b;
+    box-shadow: 0 0 5px rgba(175, 14, 9, 0.5);
+}
+
+
+
+/* cor escura #1e134b */
+
+/* cor clara #30186b */

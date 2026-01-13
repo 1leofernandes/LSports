@@ -1,0 +1,76 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+    padding: 20px;
+}
+
+.lsports-icon {
+    max-width: 100%;
+    height: auto;
+    max-height: 400px;
+    margin-bottom: 1px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1px;
+}
+.logoCountainer {
+    padding: 20px;
+}
+.container {
+    max-width: 400px;
+    background: rgba(255,255,255,0.95);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+
+    /* subtle card shadow for depth */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+}
+
+.btn-custom-red {
+    background-color: #30186b;
+    color: white;
+    border: none;
+    font-weight: bold;
+    font-size: medium;
+}
+
+.btn-custom-red:hover {
+    background-color: #1e134b;
+    color: white;
+    font-weight: bold;
+}
+
+.form-label {
+    margin-right: 300px;
+}
+
+.custom-link {
+    color: #30186b;
+    text-decoration: underline;
+}
+
+.custom-link:hover {
+    text-decoration: underline;
+}
+
+/* Ícone para exibir/ocultar a senha */
+.eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 70%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+}
+
+.eye-icon:hover {
+    color: #333;
+}

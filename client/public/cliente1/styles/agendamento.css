@@ -1,0 +1,369 @@
+:root {
+    --vermelho: #30186b;
+    --amarelo: #FFD700;
+    --vermelho-escuro: #1e134b;
+    --cinza-claro: #f8f9fa;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--cinza-claro);
+    color: #333;
+}
+
+#logout-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 15px;
+    background-color: #d80101;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+}
+#logout-btn:hover {
+    background-color: #9b0000;
+}
+
+/* Header */
+.header {
+    /* header.jpg lives in ../assets relative to this CSS file */
+    background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.5)), url("../assets/header.jpg");
+    background-size: cover;
+    background-position: center;
+    padding: 2rem 1rem;
+    color: white;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.imgheader {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid #1e134b;
+    margin: 0 auto 1rem;
+    transition: transform 0.3s ease;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.header address {
+    font-style: normal;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
+
+.date-box {
+    background: rgba(0, 255, 64, 0.9);
+    padding: 0.2rem 1rem;
+    border-radius: 18px;
+    color: #333;
+    font-weight: 500;
+    display: inline-block;
+    margin: 0 auto;
+}
+
+/* Formulário */
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 100px;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--vermelho);
+    box-shadow: 0 0 0 3px rgba(32, 0, 216, 0.1);
+}
+
+/* Botões */
+.btn-primary {
+    background: var(--vermelho);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: var(--vermelho-escuro);
+    transform: translateY(-2px);
+}
+
+/* Lista de agendamentos */
+#lista-agendamentos {
+    position: fixed;
+    bottom: 60px;
+    left: 0;
+    right: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+    display: none;
+}
+
+.booking-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+    margin-bottom: 1rem;
+    padding: 1rem;
+    transition: transform 0.2s;
+}
+
+.booking-card:hover {
+    transform: translateY(-2px);
+}
+
+.quadra-badge {
+    background: var(--vermelho);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.booking-time {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.btn-cancel {
+    background: var(--vermelho);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #1e134b;
+}
+
+/* Time Picker */
+#timeGrid, #timeGridFim {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.time-slot {
+    background: var(--cinza-claro);
+    border: 2px solid #eee;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-slot.selected {
+    border-color: var(--vermelho);
+    background: rgba(47, 0, 216, 0.05);
+}
+
+.time-slot:hover {
+    background-color: #f0f0f0;
+}
+
+/* Toast */
+/* Estilos para o Toast de Confirmação */
+.toast-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+}
+
+.toast-icon {
+    font-size: 2.5rem;
+    color: var(--vermelho);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.toast-card h5 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.toast-details {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.toast-details p {
+    margin: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #555;
+}
+
+.toast-price {
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.toast-text-price {
+    color: black;
+}
+
+.toast-price .price {
+    color: var(--vermelho);
+    font-size: 1.1rem;
+}
+
+.toast-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.btn-confirm, .btn-cancel {
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+}
+
+.btn-confirm {
+    background-color: var(--vermelho);
+    color: white;
+}
+
+.btn-confirm:hover {
+    background-color: var(--vermelho-escuro);
+}
+
+.btn-cancel {
+    background-color: white;
+    color: var(--vermelho);
+    border: 1px solid var(--vermelho) !important;
+}
+
+.btn-cancel:hover {
+    background-color: #f8f9fa;
+}
+
+/* Botão fixo */
+#btn-meus-agendamentos {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--vermelho);
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#btn-meus-agendamentos:hover {
+    background: var(--vermelho-escuro);
+}
+
+.social-icons {
+    position: absolute; /* Posicionamento absoluto em relação ao header */
+    top: 10px; /* Distância do topo */
+    right: 10px; /* Distância da direita */
+    display: flex;
+    flex-direction: column; /* Alinha os ícones em coluna */
+    gap: 19px; /* Espaçamento entre os ícones */
+}
+
+.social-icons a {
+    display: block;
+    width: 30px; /* Largura dos ícones */
+    height: 30px; /* Altura dos ícones */
+}
+
+.social-icons img {
+    width: 100%; /* Garante que a imagem ocupe todo o espaço do link */
+    height: 100%;
+    object-fit: contain; /* Mantém a proporção da imagem */
+}
+.username {
+    color: #30186b;
+}
+.quadra-btn {
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* Ao passar o mouse */
+.quadra-btn:hover {
+    background-color: #c1a8ff; /* leve vermelho claro */
+    border-color: var(--vermelho);
+    color: var(--vermelho);
+}
+
+/* Quando selecionado */
+.quadra-btn.selected {
+    background-color: var(--vermelho) !important;
+    color: white !important;
+    border-color: var(--vermelho) !important;
+    box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+}
+.quadra-btn.active {
+    background-color: #30186b;
+    color: white;
+}

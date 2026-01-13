@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="icon" href="assets/lsports-icon.png"/>
+    <link rel="stylesheet" href="styles/admin.css"/>
+</head>
+<body>
+    <div class="dashboard-header">
+        <nav class="navheader">
+          <div class="nav-wrapper">
+            <a href="#" class="brand-logo">Painel Admin</a>
+            <a href="#" data-target="mobile-menu" class="sidenav-trigger">
+              <i class="material-icons">menu</i>
+            </a>
+            <ul class="right hide-on-med-and-down">
+              <li class="sairbutton"><a onclick="logout()" class="waves-effect"><i class="material-icons left">exit_to_app</i>Sair</a></li>
+            </ul>
+          </div>
+        </nav>
+    </div>
+
+    <main>
+        <div class="row">
+            <!-- Agendamentos -->
+            <div class="col s12 l8">
+                <div class="card-panel white">
+                    <h5 class="section-title">
+                        <i class="material-icons">calendar_today</i>
+                        <span id="titulo-agendamentos">Agendamentos Recentes</span>
+                    </h5>
+                    <div class="row" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <div class="input-field col s12" style="flex: 1; margin-right: 10px;">
+                          <i class="material-icons prefix">search</i>
+                          <input type="text" id="busca-agendamentos" placeholder="nome, data, horário ou quadra...">
+                          <label for="busca-agendamentos">Buscar Agendamentos</label>
+                        </div>
+                        <button id="btn-historico" class="btn waves-effect waves-light blue">
+                            <i class="material-icons left">history</i>Histórico
+                        </button>
+                    </div>
+                    <div id="agendamentos-list">
+                        <div class="progress">
+                            <div class="indeterminate"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloqueios -->
+            <div class="col s12 l4">
+                <div class="card-panel white">
+                    <h5 class="section-title"><i class="material-icons">lock</i>Bloquear Horários</h5>
+                    
+                    <div class="input-field">
+                        <input type="date" id="data-bloqueio" class="validate">
+                        <label for="data-bloqueio">Data</label>
+                    </div>
+
+                    <div class="input-field">
+                        <select id="quadra-bloqueio-normal" class="browser-default">
+                            <option value="">Todas as Quadras</option>
+                            <option value="1">Quadra 1</option>
+                            <option value="2">Quadra 2</option>
+                        </select>
+                    </div>
+
+                    <button onclick="bloquearDia()" class="btn waves-effect waves-light btn-warning">
+                        <i class="material-icons left">block</i>Bloquear Dia
+                    </button>
+
+                    <div class="row">
+                        <div class="col s12 m6">
+                          <div class="input-field">
+                            <input type="time" id="hora-inicio" class="validate">
+                            <label for="hora-inicio">Hora Início</label>
+                          </div>
+                        </div>
+                        <div class="col s12 m6">
+                          <div class="input-field">
+                            <input type="time" id="hora-fim" class="validate">
+                            <label for="hora-fim">Hora Fim</label>
+                          </div>
+                        </div>
+                    </div>
+
+                    <button onclick="bloquearHorario()" class="btn waves-effect waves-light btn-warning">
+                        <i class="material-icons left">schedule</i>Bloquear Horário
+                    </button>
+                    <!-- Divider -->
+                    <div class="divider" style="margin: 20px 0;"></div>
+
+                    <!-- Bloqueio Recorrente -->
+                    <h6 class="section-subtitle"><i class="material-icons">repeat</i> Bloqueio Recorrente</h6>
+
+                    <div class="input-field">
+                        <input type="text" id="nome-bloqueio" class="validate">
+                        <label for="nome-bloqueio">Nome do Cliente</label>
+                   </div>
+
+                    <div class="input-field">
+                        <select id="dia-semana" class="browser-default">
+                            <option value="" disabled selected>Selecione o dia da semana</option>
+                            <option value="1">Segunda-feira</option>
+                            <option value="2">Terça-feira</option>
+                            <option value="3">Quarta-feira</option>
+                            <option value="4">Quinta-feira</option>
+                            <option value="5">Sexta-feira</option>
+                            <option value="6">Sábado</option>
+                            <option value="0">Domingo</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col s12 m6">
+                            <div class="input-field">
+                                <input type="time" id="hora-inicio-recorrente" class="validate">
+                                <label for="hora-inicio-recorrente">Hora Início</label>
+                            </div>
+                        </div>
+                        <div class="col s12 m6">
+                            <div class="input-field">
+                                <input type="time" id="hora-fim-recorrente" class="validate">
+                                <label for="hora-fim-recorrente">Hora Fim</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-field">
+                        <select id="quadra-bloqueio" class="browser-default">
+                            <option value="">Todas as Quadras</option>
+                            <option value="1">Quadra 1</option>
+                            <option value="2">Quadra 2</option>
+                        </select>
+                    </div>
+
+                    <button onclick="bloquearHorarioRecorrente()" class="btn waves-effect waves-light btn-warning">
+                        <i class="material-icons left">repeat</i> Bloquear Semanalmente
+                    </button>
+                </div>
+
+                <!-- Horários Bloqueados -->
+                <div class="card-panel white">
+                    <h5 class="section-title"><i class="material-icons">lock_clock</i>Horários Bloqueados</h5>
+                    <div id="bloqueios-list">
+                        <div class="progress">
+                            <div class="indeterminate"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-panel white">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <a class="btn btn-primary w-100 py-2" href="agendamento.html"><i class="bi bi-calendar-check"><i class="material-icons left">calendar_today</i></i> Reservar para um Cliente</a>
+                    </div>
+                    <p>Agende um horário por um cliente e salve!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funcionários -->
+        <div class="row">
+            <div class="col s12">
+                <div class="card-panel white">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h5 class="section-title"><i class="material-icons">people</i>Funcionários</h5>
+                        <button id="btnRegistrarFuncionario" class="btn waves-effect waves-light">
+                            <i class="material-icons left">person_add</i>Novo Funcionário
+                        </button>
+                    </div>
+                    <div id="funcionarios-list">
+                        <div class="progress">
+                            <div class="indeterminate"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12">
+                <div class="card-panel white">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h6 id="financeiro" class="section-title"><a href="financeiro.html" class="waves-effect"><i class="material-icons left">attach_money</i>Financeiro</a></h6>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <a class="btn btn-primary w-100 py-2" href="financeiro.html"><i class="bi bi-calendar-check"><i class="material-icons left">attach_money</i></i> Gerenciar Finanças</a><br>
+                        </div>
+                    </div>
+                    <div class="card-panel white">
+                        <p>Gerencie suas finanças e veja detalhes sobre o rendimento das quadras, lucros mensais, diários e muito mais!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- <li class="section-title"><a href="financeiro.html" class="waves-effect" id="financeiro"><i class="material-icons left">attach_money</i>Financeiro</a></li> -->
+
+    <ul class="sidenav" id="mobile-menu">
+        <li><a onclick="logout()" class="waves-effect"><i class="material-icons left">exit_to_app</i>Sair</a></li>
+    </ul>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="scripts/common.js" defer></script>
+    <script src="scripts/admin.js" defer></script>
+</body>
+</html>

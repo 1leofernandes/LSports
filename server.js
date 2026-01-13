@@ -20,7 +20,7 @@ const adminEmails = [
 
 // middlewares globais
 app.use(cors({
-  origin: ['https://l-sports.vercel.app', 'http://localhost:3000', 'http://127.0.0.1:5500'],
+  origin: ['https://l-sports.vercel.app', 'http://localhost:3000', 'http://localhost:3003', 'http://127.0.0.1:5500'],
   methods: ['GET','POST','PUT','DELETE'],
   allowedHeaders: ['Content-Type','Authorization','x-tenant'],
   credentials: true
@@ -760,53 +760,122 @@ app.put('/admin/usuarios/:id/role', authenticateToken, isAdmin, async (req, res)
 
 app.get('/relatorio-financeiro', authenticateToken, async (req, res) => {
   try {
+    console.log('TENANT no relatório financeiro:', req.tenant_id);
     const periodo = parseInt(req.query.periodo || '3', 10);
-    if (isNaN(periodo) || periodo < 1 || periodo > 12) return res.status(400).json({ error: 'Período inválido. Use 1-12 meses.' });
+    if (isNaN(periodo) || periodo < 1 || periodo > 12) {
+      return res.status(400).json({ error: 'Período inválido. Use 1-12 meses.' });
+    }
 
     await withTenantClient(req.tenant_id, async (client) => {
-      const { rows: agendamentos } = await client.query(`
-        SELECT data_agendada, hora_inicio, hora_fim, quadra, EXTRACT(DOW FROM data_agendada) as dia_semana
+      // Query corrigida - usando parâmetro para o intervalo
+      const queryText = `
+        SELECT 
+          data_agendada, 
+          hora_inicio, 
+          hora_fim, 
+          quadra, 
+          EXTRACT(DOW FROM data_agendada) as dia_semana
         FROM agendamentos
-        WHERE tenant_id = $1 AND data_agendada >= NOW() - ($2 || ' months')::INTERVAL AND data_agendada <= NOW()
+        WHERE tenant_id = $1 
+          AND data_agendada >= CURRENT_DATE - ($2 * INTERVAL '1 month')
+          AND data_agendada <= CURRENT_DATE
         ORDER BY data_agendada
-      `, [req.tenant_id, periodo]);
+      `;
 
-      // processar relatório (mesma lógica sua)
-      const report = { mensal: {}, diario: {}, por_dia_semana: Array(7).fill(0).map((_, i) => ({ dia: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][i], total:0, agendamentos:0, quadras: {} })), quadras: {} };
+      console.log('Executando query de relatório financeiro');
+      console.log('Tenant:', req.tenant_id, 'Período:', periodo, 'meses');
+
+      const { rows: agendamentos } = await client.query(queryText, [req.tenant_id, periodo]);
+
+      console.log(`Relatório financeiro: ${agendamentos.length} agendamentos encontrados para tenant ${req.tenant_id}`);
+
+      // processar relatório
+      const report = { 
+        mensal: {}, 
+        diario: {}, 
+        por_dia_semana: Array(7).fill(0).map((_, i) => ({ 
+          dia: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][i], 
+          total: 0, 
+          agendamentos: 0, 
+          quadras: {} 
+        })), 
+        quadras: {} 
+      };
+      
       agendamentos.forEach(ag => {
         const date = new Date(ag.data_agendada);
         const mesAno = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}`;
         const diaMes = `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}`;
-        const diaSemana = ag.dia_semana;
-        const quadra = ag.quadra || '0';
+        const diaSemana = parseInt(ag.dia_semana); // Garantir que é número
+        const quadra = ag.quadra ? ag.quadra.toString() : '0';
+        
+        // Calcular duração e valor
         const inicio = new Date(`1970-01-01T${ag.hora_inicio}`);
         const fim = new Date(`1970-01-01T${ag.hora_fim}`);
         const diffMin = (fim - inicio) / 60000;
         const valor = Math.floor(diffMin / 60) * 50 + ((diffMin % 60) >= 30 ? 25 : 0);
 
-        if (!report.mensal[mesAno]) report.mensal[mesAno] = { total:0, agendamentos:0, quadras: {} };
-        report.mensal[mesAno].total += valor; report.mensal[mesAno].agendamentos += 1;
-        if (!report.mensal[mesAno].quadras[quadra]) report.mensal[mesAno].quadras[quadra] = { total:0, agendamentos:0 };
-        report.mensal[mesAno].quadras[quadra].total += valor; report.mensal[mesAno].quadras[quadra].agendamentos += 1;
+        // Acumular para mês
+        if (!report.mensal[mesAno]) {
+          report.mensal[mesAno] = { total: 0, agendamentos: 0, quadras: {} };
+        }
+        report.mensal[mesAno].total += valor; 
+        report.mensal[mesAno].agendamentos += 1;
+        
+        if (!report.mensal[mesAno].quadras[quadra]) {
+          report.mensal[mesAno].quadras[quadra] = { total: 0, agendamentos: 0 };
+        }
+        report.mensal[mesAno].quadras[quadra].total += valor; 
+        report.mensal[mesAno].quadras[quadra].agendamentos += 1;
 
-        if (!report.diario[diaMes]) report.diario[diaMes] = { total:0, agendamentos:0, quadras: {} };
-        report.diario[diaMes].total += valor; report.diario[diaMes].agendamentos += 1;
-        if (!report.diario[diaMes].quadras[quadra]) report.diario[diaMes].quadras[quadra] = { total:0, agendamentos:0 };
-        report.diario[diaMes].quadras[quadra].total += valor; report.diario[diaMes].quadras[quadra].agendamentos += 1;
+        // Acumular para dia
+        if (!report.diario[diaMes]) {
+          report.diario[diaMes] = { total: 0, agendamentos: 0, quadras: {} };
+        }
+        report.diario[diaMes].total += valor; 
+        report.diario[diaMes].agendamentos += 1;
+        
+        if (!report.diario[diaMes].quadras[quadra]) {
+          report.diario[diaMes].quadras[quadra] = { total: 0, agendamentos: 0 };
+        }
+        report.diario[diaMes].quadras[quadra].total += valor; 
+        report.diario[diaMes].quadras[quadra].agendamentos += 1;
 
-        report.por_dia_semana[diaSemana].total += valor; report.por_dia_semana[diaSemana].agendamentos += 1;
-        if (!report.por_dia_semana[diaSemana].quadras[quadra]) report.por_dia_semana[diaSemana].quadras[quadra] = { total:0, agendamentos:0 };
-        report.por_dia_semana[diaSemana].quadras[quadra].total += valor; report.por_dia_semana[diaSemana].quadras[quadra].agendamentos += 1;
+        // Acumular para dia da semana (garantir que está no range 0-6)
+        const diaSemanaIndex = diaSemana >= 0 && diaSemana <= 6 ? diaSemana : 0;
+        report.por_dia_semana[diaSemanaIndex].total += valor; 
+        report.por_dia_semana[diaSemanaIndex].agendamentos += 1;
+        
+        if (!report.por_dia_semana[diaSemanaIndex].quadras[quadra]) {
+          report.por_dia_semana[diaSemanaIndex].quadras[quadra] = { total: 0, agendamentos: 0 };
+        }
+        report.por_dia_semana[diaSemanaIndex].quadras[quadra].total += valor; 
+        report.por_dia_semana[diaSemanaIndex].quadras[quadra].agendamentos += 1;
 
-        if (!report.quadras[quadra]) report.quadras[quadra] = { total:0, agendamentos:0 };
-        report.quadras[quadra].total += valor; report.quadras[quadra].agendamentos += 1;
+        // Acumular para quadra
+        if (!report.quadras[quadra]) {
+          report.quadras[quadra] = { total: 0, agendamentos: 0 };
+        }
+        report.quadras[quadra].total += valor; 
+        report.quadras[quadra].agendamentos += 1;
+      });
+
+      console.log('Relatório gerado com sucesso:', {
+        meses: Object.keys(report.mensal).length,
+        dias: Object.keys(report.diario).length,
+        totalAgendamentos: agendamentos.length
       });
 
       return res.json(report);
     });
   } catch (err) {
     console.error('/relatorio-financeiro error:', err);
-    if (!res.headersSent) res.status(500).json({ error: 'Erro ao gerar relatório' });
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        error: 'Erro ao gerar relatório',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
+    }
   }
 });
 

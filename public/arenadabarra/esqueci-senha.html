@@ -1,0 +1,34 @@
+<!-- esqueci-senha.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esqueci minha Senha</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="icon" href="assets/lsports-icon.png"/>
+    <link rel="stylesheet" href="styles/esqueci-senha.css"/>
+
+</head>
+<body>
+    <button id="logout-btn" onclick="logout()">Voltar</button>
+
+    <div class="container 20px">
+        <div class="logoCountainer">
+            <img src="assets/barraazulicon.png" alt="lsports-icon" class="lsports-icon">
+        </div>
+        <h2 class="text-center">Esqueci minha Senha</h2>
+        <form id="esqueciSenhaForm">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="digite seu Email"required >
+            </div>
+
+            <button type="submit" class="btn btn-custom-red">Enviar link de redefinição</button>
+
+        </form>
+    </div>
+    <script src="scripts/common.js" defer></script>
+    <script src="scripts/esqueci-senha.js" defer></script>
+</body>
+</html>

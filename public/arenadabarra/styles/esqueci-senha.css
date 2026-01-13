@@ -1,0 +1,91 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+    padding: 20px;
+    background: linear-gradient(135deg, #c2e45a 0%, #142353 100%);
+}
+
+.lsports-icon {
+    max-width: 100%;
+    height: auto;
+    max-height: 400px;
+    margin-bottom: 15px;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+.logoCountainer {
+    padding: 20px;
+}
+.container {
+    max-width: 400px;
+    background: rgba(255,255,255,0.95);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+
+    /* subtle card shadow for depth */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+}
+
+/* White glow behind the container to make it stand out over the background image */
+.container::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 22px;
+    background: rgba(255,255,255,0.65);
+    filter: blur(8px);
+    z-index: -1;
+    pointer-events: none;
+}
+
+
+.btn-custom-red {
+    background-color: #0f2d91;
+    color: white;
+    border: none;
+    font-size: medium;
+}
+
+.btn-custom-red:hover {
+    background-color: #142353;
+    color: white;
+}
+.form-label {
+    margin-right: 300px;
+
+}
+.custom-link {
+    color: #af0e09;
+    text-decoration: none;
+}
+
+.custom-link:hover {
+    text-decoration: underline;
+}
+#logout-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 15px;
+    background-color: #d80101;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+}
+#logout-btn:hover {
+    background-color: #9b0000;
+}
