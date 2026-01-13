@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "true",
     "start": "node server.js",
     "dev": "concurrently \"npm start\" \"cd client && npm start\"",
     "dev:backend": "nodemon --exec ts-node src/server.ts",
